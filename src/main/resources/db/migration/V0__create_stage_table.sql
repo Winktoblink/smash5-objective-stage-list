@@ -1,0 +1,28 @@
+CREATE TABLE stage
+(
+    stage_id serial PRIMARY KEY NOT NULL,
+    stage_name VARCHAR (50) UNIQUE NOT NULL,
+    min_left_blast_zone NUMERIC(4, 1) NOT NULL,
+    max_left_blast_zone NUMERIC(4, 1) NOT NULL,
+    min_right_blast_zone NUMERIC(4, 1) NOT NULL,
+    max_right_blast_zone NUMERIC(4, 1) NOT NULL,
+    min_top_blast_zone NUMERIC(4, 1) NOT NULL,
+    max_top_blast_zone NUMERIC(4, 1) NOT NULL,
+    min_bottom_blast_zone NUMERIC(4, 1) NOT NULL,
+    max_bottom_blast_zone NUMERIC(4, 1) NOT NULL,
+    stage_width NUMERIC(4, 1) NOT NULL,
+    min_distance_to_blast_zone NUMERIC(4, 1) NOT NULL,
+    max_distance_to_blast_zone NUMERIC(4, 1) NOT NULL,
+    ledge_min SMALLINT,
+    ledge_max SMALLINT,
+    walk_offs BOOLEAN,
+    ceiling BOOLEAN,
+    wall_infinite BOOLEAN,
+    random BOOLEAN,
+    water BOOLEAN,
+    symmetry BOOLEAN,
+    transform BOOLEAN,
+    two_dimensional BOOLEAN,
+    ice BOOLEAN,
+    hurt_box BOOLEAN
+);
