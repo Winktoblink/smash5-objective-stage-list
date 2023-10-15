@@ -1,0 +1,9 @@
+
+checkstyleMain {
+    ignoreFailures = false
+}
+
+pmdMain {
+    ignoreFailures = false
+}
+
