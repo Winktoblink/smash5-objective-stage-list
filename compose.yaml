@@ -12,3 +12,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # Only started with `docker compose --profile app up --build`, so `./gradlew bootRun`
+  # (which uses this file through Spring Boot's Docker Compose support) starts Postgres alone.
+  app:
+    profiles: [app]
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ssbu_stages
+      SPRING_DATASOURCE_USERNAME: ssbu
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-localdev}
+    ports:
+      - "8080:8080"
