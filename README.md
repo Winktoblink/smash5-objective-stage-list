@@ -85,7 +85,7 @@ The code is organized by feature rather than by layer. Everything about stages l
 docker compose --profile app up --build
 ```
 
-Then open <http://localhost:8080/swagger-ui.html>. CI runs this exact command and checks the search above.
+Then open <http://localhost:8080/> for the search page, or <http://localhost:8080/swagger-ui.html> for the API docs. CI runs this exact command and checks the search above.
 
 **Development** (needs JDK 25 and Docker). Spring Boot's Docker Compose support starts Postgres for you:
 
@@ -99,7 +99,7 @@ Then open <http://localhost:8080/swagger-ui.html>. CI runs this exact command an
 ./gradlew build
 ```
 
-`bootRun` is not part of CI and was not run on the author's machine for this change; the containerized stack above is the verified path.
+`bootRun` is not part of CI, but it was run locally: Postgres started automatically and the app served the API and the search page.
 
 ## API
 
@@ -117,7 +117,7 @@ How search filters behave:
 - Feature flags must match exactly when given; omit one to ignore it.
 - A range with `min > max` is rejected with a `400`.
 
-Interactive docs are at `/swagger-ui.html`, and ready-made requests are in [`http/stages.http`](http/stages.http).
+A small search page at `/` (plain HTML and JavaScript, no build step) lets you set the filters and see the matching stages. Interactive API docs are at `/swagger-ui.html`, and ready-made requests are in [`http/stages.http`](http/stages.http).
 
 ## Design decisions
 
@@ -143,7 +143,7 @@ To add or correct a stage, add a new migration (for example `V3__add_stage.sql`)
 
 ## Roadmap
 
-- Stage images and a small web UI for building a search
+- Stage images and a richer UI (sorting, saved rulesets)
 - Cache the stage list, which only changes with a deploy
 - Publish the container image to GitHub Container Registry
 - A hosted demo
