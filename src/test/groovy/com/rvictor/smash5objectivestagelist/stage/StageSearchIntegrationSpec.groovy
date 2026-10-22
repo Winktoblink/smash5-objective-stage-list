@@ -12,6 +12,8 @@ import org.springframework.test.web.servlet.MockMvc
 import spock.lang.Shared
 import spock.lang.Specification
 
+import static java.nio.charset.StandardCharsets.UTF_8
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -44,7 +46,7 @@ class StageSearchIntegrationSpec extends Specification {
         def response = mvc.perform(post("/api/v1/stages/search").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk())
                 .andReturn().response
-        json.parseText(response.getContentAsString("UTF-8")) as Map
+        json.parseText(response.getContentAsString(UTF_8)) as Map
     }
 
     private static List<String> names(Map result) {
@@ -116,14 +118,14 @@ class StageSearchIntegrationSpec extends Specification {
 
     def "a stage can be fetched by id, and an unknown id is a 404"() {
         given:
-        def all = json.parseText(mvc.perform(get("/api/v1/stages")).andReturn().response.getContentAsString("UTF-8"))
+        def all = json.parseText(mvc.perform(get("/api/v1/stages")).andReturn().response.getContentAsString(UTF_8))
         def battlefield = all.find { it.name == "Battlefield" }
 
         when:
         def found = mvc.perform(get("/api/v1/stages/${battlefield.id}")).andExpect(status().isOk()).andReturn()
 
         then:
-        json.parseText(found.response.getContentAsString("UTF-8")).name == "Battlefield"
+        json.parseText(found.response.getContentAsString(UTF_8)).name == "Battlefield"
         battlefield.blastZones.top.min == 192
         battlefield.ledgeCount.min == 2
 
