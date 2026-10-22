@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: smash5-objective-stage-list
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  mvc:
+    problemdetails:
+      enabled: true
+  # No datasource URL or credentials here: `bootRun` gets them from Docker Compose,
+  # and the container gets them from SPRING_DATASOURCE_* environment variables.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

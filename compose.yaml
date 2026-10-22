@@ -1,9 +1,14 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:18-alpine
     environment:
-      - 'POSTGRES_DB=ssbu_stages'
-      - 'POSTGRES_USER=pgres_user'
-      - 'POSTGRES_PASSWORD=pgrespass'
+      POSTGRES_DB: ssbu_stages
+      POSTGRES_USER: ssbu
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdev}
     ports:
-      - '5432:5432'
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ssbu -d ssbu_stages"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
