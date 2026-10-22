@@ -1,13 +1,13 @@
 package com.rvictor.smash5objectivestagelist.common.validation;
 
+import static java.lang.annotation.ElementType.TYPE;
+
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.TYPE;
 
 /** Requires {@code min <= max} when both bounds are present. A missing bound is always valid. */
 @Documented
