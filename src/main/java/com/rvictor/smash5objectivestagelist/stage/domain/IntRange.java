@@ -10,4 +10,6 @@ import org.hibernate.type.SqlTypes;
  * <p>In a {@link StageSearchCriteria} either bound may be {@code null}, meaning that side is open-ended.
  */
 @Embeddable
-public record IntRange(@JdbcTypeCode(SqlTypes.SMALLINT) Integer min, @JdbcTypeCode(SqlTypes.SMALLINT) Integer max) {}
+public record IntRange(
+        @JdbcTypeCode(SqlTypes.SMALLINT) Integer min,
+        @JdbcTypeCode(SqlTypes.SMALLINT) Integer max) {}

@@ -37,8 +37,8 @@ class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(status, "Request body is missing or is not valid JSON for this endpoint");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                status, "Request body is missing or is not valid JSON for this endpoint");
         problem.setTitle("Malformed request");
         return handleExceptionInternal(ex, problem, headers, status, request);
     }

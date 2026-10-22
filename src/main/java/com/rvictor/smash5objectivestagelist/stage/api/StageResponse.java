@@ -12,7 +12,8 @@ public record StageResponse(
         IntRangeDto ledgeCount,
         Features features) {
 
-    public record BlastZones(DecimalRangeDto left, DecimalRangeDto right, DecimalRangeDto top, DecimalRangeDto bottom) {}
+    public record BlastZones(
+            DecimalRangeDto left, DecimalRangeDto right, DecimalRangeDto top, DecimalRangeDto bottom) {}
 
     public record Features(
             boolean walkOffs,

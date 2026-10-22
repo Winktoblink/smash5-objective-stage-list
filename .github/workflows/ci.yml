@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      # Runs compile, Spotless, all specs (Testcontainers uses the runner's Docker) and the coverage gate.
+      - name: Build
+        run: ./gradlew build
+
+      - name: Upload test and coverage reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            build/reports/tests/test
+            build/reports/jacoco/test/html
+          if-no-files-found: ignore
+
+      # Brings up Postgres and the app exactly as the README describes, then runs the "classic competitive" search.
+      - name: Smoke test the Compose stack
+        run: |
+          docker compose --profile app up --build --detach
+          for i in $(seq 1 60); do
+            curl -fs http://localhost:8080/actuator/health && break
+            sleep 2
+          done
+          curl -fsS -X POST http://localhost:8080/api/v1/stages/search             -H 'Content-Type: application/json'             -d '{"ledgeCount":{"min":2,"max":2},"features":{"walkOffs":false,"wallInfinite":false,"random":false,"water":false,"symmetry":true,"transform":false,"ice":false,"hurtBox":false}}'             -o search.json
+          jq '{count, first: .stages[0]}' search.json
+          test "$(jq .count search.json)" = "30"
+          echo "swagger-ui status: $(curl -fsSL -o /dev/null -w '%{http_code}' http://localhost:8080/swagger-ui.html)"
+          curl -fsS http://localhost:8080/v3/api-docs | jq -r '.paths | keys[]'
+
+      - name: Dump Compose logs on failure
+        if: failure()
+        run: docker compose --profile app logs
+
+      - name: Stop the Compose stack
+        if: always()
+        run: docker compose --profile app down --volumes
