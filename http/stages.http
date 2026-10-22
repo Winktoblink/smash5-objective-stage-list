@@ -1,0 +1,61 @@
+### Sample requests for the Stage API (IntelliJ HTTP Client / VS Code REST Client).
+### Start the app first: ./gradlew bootRun   (or: docker compose --profile app up --build)
+
+@baseUrl = http://localhost:8080
+
+### List every stage, sorted by name
+GET {{baseUrl}}/api/v1/stages
+
+### Get one stage by id
+GET {{baseUrl}}/api/v1/stages/1
+
+### Unknown id -> 404 problem detail
+GET {{baseUrl}}/api/v1/stages/999999
+
+### Search: empty filter matches all 109 stages
+POST {{baseUrl}}/api/v1/stages/search
+Content-Type: application/json
+
+{}
+
+### Search: "classic competitive" -> 30 stages
+POST {{baseUrl}}/api/v1/stages/search
+Content-Type: application/json
+
+{
+  "ledgeCount": { "min": 2, "max": 2 },
+  "features": {
+    "walkOffs": false,
+    "wallInfinite": false,
+    "random": false,
+    "water": false,
+    "symmetry": true,
+    "transform": false,
+    "ice": false,
+    "hurtBox": false
+  }
+}
+
+### Search: containment. Stages whose left blast zone stays within -240..-200 -> 43 stages
+POST {{baseUrl}}/api/v1/stages/search
+Content-Type: application/json
+
+{
+  "blastZones": { "left": { "min": -240, "max": -200 } }
+}
+
+### Search: open-ended bound. Stages at least 900 wide -> Great Cave Offensive
+POST {{baseUrl}}/api/v1/stages/search
+Content-Type: application/json
+
+{
+  "stageWidth": { "min": 900 }
+}
+
+### Invalid request: min > max -> 400 problem detail with an "errors" array
+POST {{baseUrl}}/api/v1/stages/search
+Content-Type: application/json
+
+{
+  "stageWidth": { "min": 200, "max": 100 }
+}
