@@ -84,6 +84,41 @@ class StageSearchIntegrationSpec extends Specification {
         !("Mario Circuit (Smash 4)" in names(result))
     }
 
+    def "overlap matching also finds stages whose range only partly reaches the filter"() {
+        when:
+        def contained = search(StageSearchExamples.LEFT_BLAST_ZONE_CONTAINMENT)
+        def overlapping = search(StageSearchExamples.LEFT_BLAST_ZONE_OVERLAP)
+
+        then:
+        // Containment results are a subset of the overlap results.
+        (names(contained) as Set).every { it in names(overlapping) }
+        // Delfino Plaza (-230..-180) and Mario Circuit (-250..-175) only partly overlap the filter.
+        "Delfino Plaza" in names(overlapping)
+        "Mario Circuit (Smash 4)" in names(overlapping)
+        overlapping.count > contained.count
+    }
+
+    def "overlap matching treats each open-ended bound separately"() {
+        expect:
+        // Delfino Plaza's left blast zone is -230..-180.
+        "Delfino Plaza" in names(search(body)) == expected
+
+        where:
+        body                                                                                 | expected
+        '{"blastZones": {"left": {"min": -200}}, "rangeMatch": "OVERLAPS"}'                  | true
+        '{"blastZones": {"left": {"min": -170}}, "rangeMatch": "OVERLAPS"}'                  | false
+        '{"blastZones": {"left": {"max": -220}}, "rangeMatch": "OVERLAPS"}'                  | true
+        '{"blastZones": {"left": {"max": -240}}, "rangeMatch": "OVERLAPS"}'                  | false
+        '{"blastZones": {"left": {"min": -200}}, "rangeMatch": "CONTAINED"}'                 | false
+        '{"blastZones": {"left": {"min": -240, "max": -200}}}'                               | false
+    }
+
+    def "a stage width filter behaves the same in both modes"() {
+        expect:
+        names(search('{"stageWidth": {"min": 900}, "rangeMatch": "OVERLAPS"}')) == ["Great Cave Offensive"]
+        names(search('{"stageWidth": {"min": 900}, "rangeMatch": "CONTAINED"}')) == ["Great Cave Offensive"]
+    }
+
     def "a range filter combines with a feature flag"() {
         when:
         def result = search('{"blastZones": {"left": {"min": -240, "max": -200}}, "features": {"walkOffs": false}}')

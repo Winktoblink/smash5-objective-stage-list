@@ -37,7 +37,8 @@ final class StageApiMapper {
                                 features.transform(),
                                 features.twoDimensional(),
                                 features.ice(),
-                                features.hurtBox()));
+                                features.hurtBox()),
+                request.rangeMatch());
     }
 
     static StageResponse toResponse(Stage stage) {

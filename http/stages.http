@@ -44,6 +44,15 @@ Content-Type: application/json
   "blastZones": { "left": { "min": -240, "max": -200 } }
 }
 
+### Search: overlap. Stages whose left blast zone can reach -240..-200 at some point (adds e.g. Delfino Plaza)
+POST {{baseUrl}}/api/v1/stages/search
+Content-Type: application/json
+
+{
+  "blastZones": { "left": { "min": -240, "max": -200 } },
+  "rangeMatch": "OVERLAPS"
+}
+
 ### Search: open-ended bound. Stages at least 900 wide -> Great Cave Offensive
 POST {{baseUrl}}/api/v1/stages/search
 Content-Type: application/json

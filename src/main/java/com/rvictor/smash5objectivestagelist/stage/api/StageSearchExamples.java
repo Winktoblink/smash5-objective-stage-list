@@ -28,4 +28,12 @@ public final class StageSearchExamples {
               "blastZones": { "left": { "min": -240, "max": -200 } }
             }
             """;
+
+    /** Stages whose left blast zone can reach {@code [-240, -200]} at some point. */
+    public static final String LEFT_BLAST_ZONE_OVERLAP = """
+            {
+              "blastZones": { "left": { "min": -240, "max": -200 } },
+              "rangeMatch": "OVERLAPS"
+            }
+            """;
 }
