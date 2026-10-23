@@ -44,6 +44,45 @@
       </fieldset>
     </form>
 
+    <section class="results" id="builder" aria-labelledby="builder-heading">
+      <h2 id="builder-heading">Stage list builder</h2>
+      <p class="hint">Pick stages from the results below with the Starter and Counterpick buttons.
+        Starters are struck down in game 1; counterpicks are available from game 2.</p>
+      <div class="builder-lists">
+        <div>
+          <h3 id="starters-heading">Starters</h3>
+          <ul class="tiles" id="starters"></ul>
+          <p class="hint" id="striking-order"></p>
+        </div>
+        <div>
+          <h3 id="counterpicks-heading">Counterpicks</h3>
+          <ul class="tiles" id="counterpicks"></ul>
+        </div>
+      </div>
+      <div class="settings">
+        <label>Winner bans
+          <select id="set-bans">
+            <option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option>
+          </select>
+        </label>
+        <label>Stage repeats
+          <select id="set-dsr"></select>
+        </label>
+        <label class="toggle"><input type="checkbox" id="set-gentleman"> Gentleman's Rule</label>
+      </div>
+      <ul id="builder-messages" class="messages"></ul>
+      <div id="preset-tools" hidden>
+        <div class="actions">
+          <label>Load a stage list <select id="list-preset"></select></label>
+          <button type="button" id="load-list">Load</button>
+          <button type="button" id="clear-list">Clear</button>
+        </div>
+        <p class="hint" id="preset-info"></p>
+        <label>Compare with <select id="compare-preset"></select></label>
+        <div id="diff"></div>
+      </div>
+    </section>
+
     <section class="results" aria-live="polite">
       <h2 id="results-heading">Results</h2>
       <p id="status">Loading the stage list…</p>
