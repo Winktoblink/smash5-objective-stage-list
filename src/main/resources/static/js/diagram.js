@@ -1,8 +1,11 @@
-// A schematic SVG of one stage, drawn from its measurements. It is original artwork and not a picture of
+// A schematic diagram of one stage, drawn from its measurements. It is original artwork and not a picture of
 // the stage: the blast zones, the main stage and the ledges are to scale, and Battlefield's outline is laid
 // over it for comparison. The stage is drawn centered on x = 0 with its top surface at y = 0, which is an
 // assumption, and platforms are left out because the data has no platform positions.
-// Colors come from CSS classes (see app.css), so the diagram follows the page's light and dark themes.
+//
+// `diagramModel` describes the picture as plain shapes. `stageDiagram` turns the model into SVG for the page,
+// and export.js draws the same model on a canvas, so both show the same thing. Colors come from the shapes'
+// `cls` names: CSS classes in the page (see app.css) and a color table in the image export.
 
 const escapeXml = (text) =>
   String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -18,21 +21,21 @@ export function extents(stage) {
   };
 }
 
+// SVG's y axis points down, so the game's top edge is drawn at -top.
 function rect(box, cls) {
-  // SVG's y axis points down, so the game's top edge is -top.
-  return `<rect class="${cls}" x="${n(box.left)}" y="${n(-box.top)}" width="${n(box.right - box.left)}" height="${n(box.top - box.bottom)}" vector-effect="non-scaling-stroke"/>`;
+  return { kind: 'rect', cls, x: box.left, y: -box.top, w: box.right - box.left, h: box.top - box.bottom };
 }
 
 function stageBar(width, cls) {
-  const half = width / 2;
-  return `<line class="${cls}" x1="${n(-half)}" y1="0" x2="${n(half)}" y2="0" vector-effect="non-scaling-stroke"/>`;
+  return { kind: 'line', cls, x1: -width / 2, y1: 0, x2: width / 2, y2: 0 };
 }
 
 /**
- * Returns the SVG markup for `stage`. `reference` is the stage to overlay (Battlefield) or null.
- * With `options.label` the stage name is also written inside the picture, for the detail view.
+ * The picture of `stage` as `{ view, shapes, description }`. `reference` is the stage to overlay (Battlefield)
+ * or null. With `options.label` the stage name is also a shape, for the detail view.
+ * `view` is `{ x, y, w, h }`; each shape is a `rect`, `line`, `circle` or `text` with a `cls`.
  */
-export function stageDiagram(stage, reference = null, options = {}) {
+export function diagramModel(stage, reference = null, options = {}) {
   const own = extents(stage);
   const ref = reference && reference.id !== stage.id ? extents(reference) : null;
 
@@ -41,27 +44,45 @@ export function stageDiagram(stage, reference = null, options = {}) {
   const right = Math.max(...boxes.map((b) => b.right));
   const top = Math.max(...boxes.map((b) => b.top));
   const bottom = Math.min(...boxes.map((b) => b.bottom));
-  const pad = Math.max(right - left, top - bottom) * 0.04;
-  const viewBox = [left - pad, -top - pad, right - left + 2 * pad, top - bottom + 2 * pad].map(n).join(' ');
+  const size = Math.max(right - left, top - bottom);
+  const pad = size * 0.04;
 
-  const parts = [];
-  parts.push(rect(own.far, 'dg-far'));
-  if (JSON.stringify(own.near) !== JSON.stringify(own.far)) parts.push(rect(own.near, 'dg-near'));
+  const shapes = [rect(own.far, 'dg-far')];
+  if (JSON.stringify(own.near) !== JSON.stringify(own.far)) shapes.push(rect(own.near, 'dg-near'));
   if (ref) {
-    parts.push(rect(ref.near, 'dg-ref'));
-    parts.push(stageBar(reference.stageWidth, 'dg-ref'));
+    shapes.push(rect(ref.near, 'dg-ref'), stageBar(reference.stageWidth, 'dg-ref'));
   }
-  parts.push(stageBar(stage.stageWidth, 'dg-stage'));
+  shapes.push(stageBar(stage.stageWidth, 'dg-stage'));
   if (stage.ledgeCount.max > 0) {
     const half = stage.stageWidth / 2;
-    const r = Math.max(right - left, top - bottom) * 0.012;
-    parts.push(`<circle class="dg-ledge" cx="${n(-half)}" cy="0" r="${n(r)}"/><circle class="dg-ledge" cx="${n(half)}" cy="0" r="${n(r)}"/>`);
+    const r = size * 0.012;
+    shapes.push({ kind: 'circle', cls: 'dg-ledge', cx: -half, cy: 0, r }, { kind: 'circle', cls: 'dg-ledge', cx: half, cy: 0, r });
   }
   if (options.label) {
-    const size = Math.max(right - left, top - bottom) * 0.045;
-    parts.push(`<text class="dg-label" x="${n(left + pad)}" y="${n(-top + pad + size)}" font-size="${n(size)}">${escapeXml(stage.name)}</text>`);
+    const fontSize = size * 0.045;
+    shapes.push({ kind: 'text', cls: 'dg-label', x: left + pad, y: -top + pad + fontSize, size: fontSize, text: stage.name });
   }
 
-  const description = `Diagram of ${stage.name}: blast zones, main stage and ledges to scale${ref ? ', with Battlefield outlined for comparison' : ''}.`;
-  return `<svg class="diagram" viewBox="${viewBox}" role="img" aria-label="${escapeXml(description)}" xmlns="http://www.w3.org/2000/svg"><title>${escapeXml(description)}</title>${parts.join('')}</svg>`;
+  return {
+    view: { x: left - pad, y: -top - pad, w: right - left + 2 * pad, h: top - bottom + 2 * pad },
+    shapes,
+    description: `Diagram of ${stage.name}: blast zones, main stage and ledges to scale${ref ? ', with Battlefield outlined for comparison' : ''}.`,
+  };
+}
+
+function svgShape(s) {
+  const stroke = 'vector-effect="non-scaling-stroke"';
+  switch (s.kind) {
+    case 'rect': return `<rect class="${s.cls}" x="${n(s.x)}" y="${n(s.y)}" width="${n(s.w)}" height="${n(s.h)}" ${stroke}/>`;
+    case 'line': return `<line class="${s.cls}" x1="${n(s.x1)}" y1="${n(s.y1)}" x2="${n(s.x2)}" y2="${n(s.y2)}" ${stroke}/>`;
+    case 'circle': return `<circle class="${s.cls}" cx="${n(s.cx)}" cy="${n(s.cy)}" r="${n(s.r)}"/>`;
+    default: return `<text class="${s.cls}" x="${n(s.x)}" y="${n(s.y)}" font-size="${n(s.size)}">${escapeXml(s.text)}</text>`;
+  }
+}
+
+/** The SVG markup for `stage` (see {@link diagramModel}). */
+export function stageDiagram(stage, reference = null, options = {}) {
+  const { view, shapes, description } = diagramModel(stage, reference, options);
+  const viewBox = [view.x, view.y, view.w, view.h].map(n).join(' ');
+  return `<svg class="diagram" viewBox="${viewBox}" role="img" aria-label="${escapeXml(description)}" xmlns="http://www.w3.org/2000/svg"><title>${escapeXml(description)}</title>${shapes.map(svgShape).join('')}</svg>`;
 }
