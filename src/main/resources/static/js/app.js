@@ -6,11 +6,17 @@ import {
 } from './criteria.js';
 import { describeMode, explainFailure, formatRange, measurementRows, summaryLine } from './explain.js';
 import { stageDiagram } from './diagram.js';
-import { CRITERIA_PRESETS, missingCount, visibleStagePresets } from './presets.js';
+import {
+  CRITERIA_PRESETS, STAGE_LIST_PRESETS, missingCount, visibleStagePresets,
+} from './presets.js';
 import {
   DSR_OPTIONS, addStage, emptyBuilder, fromPreset, removeStage, strikingOrder, validate,
 } from './builder.js';
 import { compareLists, diffWithPreset } from './diff.js';
+import { decode, encode, isDefault } from './permalink.js';
+import {
+  DEFAULT_GAME, GAME_FIELDS, IMAGE, gameLines, renderStageListImage, ruleLines, rulesetMarkdown,
+} from './export.js';
 
 const DATA_URL = 'data/stages.json';
 const DEBOUNCE_MS = 120;
@@ -35,6 +41,7 @@ let references = [];
 let timer;
 let builder = emptyBuilder();
 let presets = [];
+let lastHash = '';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -114,6 +121,8 @@ function readPlain() {
 
 function fillForm(plain = {}) {
   form.reset();
+  form.elements.separateSides.checked = plain.separateSides === true;
+  form.elements.rangeMatch.value = plain.rangeMatch ?? RANGE_MATCH.CONTAINED;
   for (const m of MEASUREMENTS) {
     form.elements[`${m.key}.min`].value = plain[m.key]?.min ?? '';
     form.elements[`${m.key}.max`].value = plain[m.key]?.max ?? '';
@@ -187,6 +196,7 @@ function setStatus(text, isError = false) {
 
 function refresh() {
   const plain = readPlain();
+  updateHash(plain);
   $('mode-note').textContent = describeMode(plain.rangeMatch);
   syncSides();
 
@@ -221,6 +231,133 @@ function refresh() {
   $('groups').replaceChildren(...groups);
   renderBuilder(criteria);
   renderDiff(criteria);
+}
+
+// ---------- sharing and export ----------
+
+function buildGameFields() {
+  const box = $('game-fields');
+  for (const { key, label } of GAME_FIELDS) {
+    const input = el('input', { type: 'text', name: `game.${key}`, maxlength: '200', autocomplete: 'off' });
+    box.append(el('label', { class: 'range' }, el('span', { class: 'name' }, label), input));
+  }
+  setGame(DEFAULT_GAME);
+}
+
+function readGame() {
+  return Object.fromEntries(GAME_FIELDS.map(({ key }) => [key, document.getElementsByName(`game.${key}`)[0].value]));
+}
+
+function setGame(game) {
+  for (const { key } of GAME_FIELDS) document.getElementsByName(`game.${key}`)[0].value = game[key] ?? '';
+}
+
+/** Everything the address holds: the criteria, the builder and the game settings. */
+function currentState(plain = readPlain()) {
+  return { plain, builder, game: readGame() };
+}
+
+function updateHash(plain) {
+  try {
+    const state = currentState(plain);
+    if (isDefault(state)) {
+      // A fresh page keeps a clean address.
+      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    } else if (encode(state) !== location.hash) {
+      history.replaceState(null, '', encode(state));
+    }
+    lastHash = location.hash;
+  } catch {
+    // A page in a sandbox or preview may not allow it; the page works without an address.
+  }
+}
+
+function showNotices(notices) {
+  const list = $('notices');
+  list.replaceChildren(...notices.map((n) => el('li', {}, n)));
+  list.hidden = notices.length === 0;
+}
+
+function restoreFromAddress() {
+  const valid = {
+    stageIds: new Set(stages.map((s) => s.id)),
+    presetIds: new Set(presets.map((p) => p.id)),
+  };
+  const { state, notices } = decode(location.hash, valid);
+  showNotices(notices);
+  if (!location.hash || location.hash === '#') return;
+  fillForm(state.plain);
+  builder = state.builder;
+  setGame(state.game);
+  lastHash = location.hash;
+  refresh();
+}
+
+function presetMissing() {
+  const preset = STAGE_LIST_PRESETS.find((p) => p.id === builder.loadedPreset);
+  return preset ? preset.missing : { starters: [], counterpicks: [] };
+}
+
+function currentRuleset() {
+  return rulesetMarkdown(builder, readGame(), new Map(stages.map((s) => [s.id, s.name])), presetMissing());
+}
+
+function setShareStatus(text) {
+  $('share-status').textContent = text;
+}
+
+async function copy(text, done) {
+  try {
+    await navigator.clipboard.writeText(text);
+    setShareStatus(done);
+  } catch {
+    // The Clipboard API needs a secure page and a user gesture; fall back to the old way.
+    const area = el('textarea', { 'aria-hidden': 'true' });
+    area.value = text;
+    document.body.append(area);
+    area.select();
+    const ok = document.execCommand?.('copy');
+    area.remove();
+    setShareStatus(ok ? done : 'Could not copy. Select the address bar text instead.');
+  }
+}
+
+function themeColors() {
+  const css = getComputedStyle(document.documentElement);
+  const read = (name) => css.getPropertyValue(name).trim();
+  return {
+    bg: read('--bg'), text: read('--text'), muted: read('--muted'), border: read('--border'), accent: read('--accent'),
+    zoneFar: read('--zone-far'), zoneNear: read('--zone-near'), stage: read('--stage'), ledge: read('--ledge'), ref: read('--ref'),
+  };
+}
+
+function downloadImage() {
+  const byId = new Map(stages.map((s) => [s.id, s]));
+  const pick = (ids) => ids.map((id) => byId.get(id)).filter(Boolean);
+  const missing = presetMissing();
+  const canvas = el('canvas', { width: String(IMAGE.width), height: String(IMAGE.height) });
+  const order = strikingOrder(builder.starters.length + builder.missingStarters);
+  renderStageListImage(canvas.getContext('2d'), {
+    title: 'Stage list',
+    starters: pick(builder.starters),
+    counterpicks: pick(builder.counterpicks),
+    reference: references[0] ?? null,
+    rules: [...(order ? [`Game 1 striking: ${order}`] : []), ...ruleLines(builder).map((l) => l.replace(/\.$/, ''))],
+    settings: gameLines(readGame()).map(([label, value]) => `${label}: ${value}`),
+    missing: { starters: missing.starters.length, counterpicks: missing.counterpicks.length },
+  }, themeColors());
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      setShareStatus('Could not make the image.');
+      return;
+    }
+    const link = el('a', { href: URL.createObjectURL(blob), download: 'stage-list.png' });
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+    setShareStatus('Image downloaded.');
+  }, 'image/png');
 }
 
 // ---------- the stage-list builder ----------
@@ -358,6 +495,7 @@ function fixSwaggerLink() {
 async function init() {
   buildForm();
   buildPresetTools();
+  buildGameFields();
   fixSwaggerLink();
   try {
     const response = await fetch(DATA_URL);
@@ -413,6 +551,14 @@ async function init() {
   $('clear-list').addEventListener('click', () => { builder = emptyBuilder(); refresh(); });
   $('list-preset').addEventListener('change', refresh);
   $('compare-preset').addEventListener('change', refresh);
+  $('game-fields').addEventListener('input', schedule);
+  $('copy-link').addEventListener('click', () => copy(location.href, 'Link copied.'));
+  $('copy-ruleset').addEventListener('click', () => copy(currentRuleset(), 'Ruleset copied. Paste it into start.gg\'s rules tab.'));
+  $('download-image').addEventListener('click', downloadImage);
+  window.addEventListener('hashchange', () => {
+    if (location.hash !== lastHash) restoreFromAddress();
+  });
+  restoreFromAddress();
   refresh();
 
 }

@@ -83,6 +83,23 @@
       </div>
     </section>
 
+    <section class="results" id="share" aria-labelledby="share-heading">
+      <h2 id="share-heading">Share and export</h2>
+      <ul id="notices" class="problems" hidden></ul>
+      <details>
+        <summary>Game settings for the export</summary>
+        <p class="hint">These go into the ruleset text and the image. Change them to match your event. A blank field is left out.</p>
+        <div class="ranges" id="game-fields"></div>
+      </details>
+      <div class="actions share-actions">
+        <button type="button" id="copy-link">Copy link</button>
+        <button type="button" id="copy-ruleset">Copy ruleset</button>
+        <button type="button" id="download-image">Download image</button>
+        <span class="hint" id="share-status" role="status"></span>
+      </div>
+      <p class="hint">The link holds your criteria, stage lists and settings. "Copy ruleset" gives Markdown you can paste into start.gg's rules tab.</p>
+    </section>
+
     <section class="results" aria-live="polite">
       <h2 id="results-heading">Results</h2>
       <p id="status">Loading the stage list…</p>
