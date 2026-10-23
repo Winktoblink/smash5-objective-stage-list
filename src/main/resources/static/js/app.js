@@ -241,8 +241,17 @@ function schedule() {
   timer = setTimeout(refresh, DEBOUNCE_MS);
 }
 
+/** On GitHub Pages there is no API, so Swagger UI doesn't exist: point to the README's API section instead. */
+function fixSwaggerLink() {
+  if (!location.hostname.endsWith('github.io')) return;
+  const link = $('swagger-link');
+  link.href = 'https://github.com/Winktoblink/smash5-objective-stage-list#api';
+  link.textContent = 'API (run it locally)';
+}
+
 async function init() {
   buildForm();
+  fixSwaggerLink();
   try {
     const response = await fetch(DATA_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);

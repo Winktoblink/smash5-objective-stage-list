@@ -7,6 +7,8 @@
 
 A REST API that answers "which Super Smash Bros. Ultimate stages meet these requirements?" by filtering on measured stage properties instead of opinion.
 
+**Try it: <https://winktoblink.github.io/smash5-objective-stage-list/>** (a static page that needs no server; published by [`pages.yml`](.github/workflows/pages.yml) once GitHub Pages is enabled for the repository).
+
 ## The problem
 
 Competitive Smash communities regularly argue about which stages should be legal. The arguments are usually about feel: a stage is "too big", "too campy", "unfair". This service makes the criteria explicit. A caller states the measurable properties they care about, such as blast-zone distances, stage width, ledge count, or whether a stage has walk-offs or water, and gets back every stage that satisfies all of them. Two rulesets can then be compared by what they actually require.
