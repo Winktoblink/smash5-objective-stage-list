@@ -112,8 +112,9 @@ Then open <http://localhost:8080/> for the search page, or <http://localhost:808
 How search filters behave:
 
 - Every field is optional. `{}` returns all 109 stages.
-- Range filters (`blastZones.left|right|top|bottom`, `distanceToBlastZone`, `ledgeCount`) use **containment**: a stage matches only if its whole `[min, max]` range lies inside the filter. Either bound can be omitted.
-- `stageWidth` is a single value and matches when it is inside the filter.
+- Range filters (`blastZones.left|right|top|bottom`, `distanceToBlastZone`, `ledgeCount`) use **containment** by default: a stage matches only if its whole `[min, max]` range lies inside the filter. Either bound can be omitted.
+- Add `"rangeMatch": "OVERLAPS"` to match stages whose range only has to *touch* the filter, which finds stages that can reach it at some point. Omitting the field, or sending `"CONTAINED"`, gives the default. Any other value is a `400`. See [ADR-0004](docs/adr/0004-opt-in-overlap-matching.md).
+- `stageWidth` is a single value and matches when it is inside the filter in both modes.
 - Feature flags must match exactly when given; omit one to ignore it.
 - A range with `min > max` is rejected with a `400`.
 
@@ -121,7 +122,7 @@ A small search page at `/` (plain HTML and JavaScript, no build step) lets you s
 
 ## Design decisions
 
-- **Containment for range filters.** A stage that only sometimes meets a requirement does not meet it. See [ADR-0001](docs/adr/0001-range-containment-filter-semantics.md).
+- **Containment for range filters.** A stage that only sometimes meets a requirement does not meet it. See [ADR-0001](docs/adr/0001-range-containment-filter-semantics.md). Overlap matching is available as an explicit opt-in: [ADR-0004](docs/adr/0004-opt-in-overlap-matching.md).
 - **Flyway owns the schema; Hibernate only validates.** A fresh database is always built the same way, and mapping drift fails at startup. See [ADR-0002](docs/adr/0002-flyway-owns-schema.md).
 - **Tests run against real PostgreSQL, written in Spock.** See [ADR-0003](docs/adr/0003-testing-with-spock-and-testcontainers.md).
 - **`POST` for search.** The filter is a nested document, which does not fit a query string cleanly.

@@ -1,6 +1,6 @@
 # 1. Range filters use containment
 
-Status: Accepted
+Status: Accepted. Amended by [ADR-0004](0004-opt-in-overlap-matching.md), which adds opt-in overlap matching.
 
 ## Context
 
