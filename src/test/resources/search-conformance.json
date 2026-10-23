@@ -1,0 +1,896 @@
+[
+  {
+    "name": "an empty request matches every stage",
+    "request": {},
+    "expectedCount": 107
+  },
+  {
+    "name": "classic competitive",
+    "request": {
+      "ledgeCount": {
+        "min": 2,
+        "max": 2
+      },
+      "features": {
+        "walkOffs": false,
+        "wallInfinite": false,
+        "random": false,
+        "water": false,
+        "symmetry": true,
+        "transform": false,
+        "ice": false,
+        "hurtBox": false
+      }
+    },
+    "expected": [
+      "Battlefield",
+      "Big Battlefield",
+      "Dream Land (64)",
+      "Final Destination",
+      "Fountain of Dreams",
+      "Great Plateau Tower",
+      "Kalos Pokémon League",
+      "Kongo Jungle",
+      "Luigi's Mansion",
+      "Lylat Cruise",
+      "Mementos",
+      "Midgar",
+      "PictoChat 2",
+      "Pokémon Stadium",
+      "Pokémon Stadium 2",
+      "Skyloft",
+      "Small Battlefield",
+      "Smashville",
+      "Spring Stadium",
+      "Town & City",
+      "Umbra Clock Tower",
+      "Unova Pokémon League",
+      "WarioWare, Inc.",
+      "Wily Castle",
+      "Wuhu Island",
+      "Yggdrasil's Altar",
+      "Yoshi's Island (Brawl)",
+      "Yoshi's Story"
+    ]
+  },
+  {
+    "name": "left blast zone contained in -240..-200",
+    "request": {
+      "blastZones": {
+        "left": {
+          "min": -240,
+          "max": -200
+        }
+      }
+    },
+    "expected": [
+      "75m",
+      "Balloon Fight",
+      "Battlefield",
+      "Bridge of Eldin",
+      "Castle Siege",
+      "Final Destination",
+      "Fountain of Dreams",
+      "Fourside",
+      "Gamer",
+      "Gerudo Valley",
+      "Green Greens",
+      "Halberd",
+      "Hanenbow",
+      "Kongo Jungle",
+      "Lylat Cruise",
+      "Mario Bros.",
+      "Mushroom Kingdom",
+      "Mute City",
+      "New Donk City Hall",
+      "Norfair",
+      "PictoChat 2",
+      "Pirate Ship",
+      "Port Town Aero Dive",
+      "Prism Tower",
+      "Rainbow Cruise",
+      "Reset Bomb Forest",
+      "Shadow Moses Island",
+      "Skyloft",
+      "Skyworld",
+      "Small Battlefield",
+      "Smashville",
+      "Spiral Mountain",
+      "Summit",
+      "Suzaku Castle",
+      "Tomodachi Life",
+      "Town & City",
+      "Unova Pokémon League",
+      "Windy Hill Zone",
+      "Wuhu Island",
+      "Yoshi's Island (Brawl)",
+      "Yoshi's Island (Melee)",
+      "Yoshi's Story"
+    ]
+  },
+  {
+    "name": "left blast zone overlapping -240..-200",
+    "request": {
+      "blastZones": {
+        "left": {
+          "min": -240,
+          "max": -200
+        }
+      },
+      "rangeMatch": "OVERLAPS"
+    },
+    "expected": [
+      "75m",
+      "Balloon Fight",
+      "Battlefield",
+      "Bridge of Eldin",
+      "Castle Siege",
+      "Delfino Plaza",
+      "Final Destination",
+      "Fountain of Dreams",
+      "Fourside",
+      "Gamer",
+      "Gerudo Valley",
+      "Green Greens",
+      "Halberd",
+      "Hanenbow",
+      "Kongo Jungle",
+      "Lylat Cruise",
+      "Mario Bros.",
+      "Mario Circuit (Smash 4)",
+      "Mushroom Kingdom",
+      "Mute City",
+      "New Donk City Hall",
+      "Norfair",
+      "PictoChat 2",
+      "Pirate Ship",
+      "Port Town Aero Dive",
+      "Prism Tower",
+      "Rainbow Cruise",
+      "Reset Bomb Forest",
+      "Shadow Moses Island",
+      "Skyloft",
+      "Skyworld",
+      "Small Battlefield",
+      "Smashville",
+      "Spiral Mountain",
+      "Summit",
+      "Suzaku Castle",
+      "Tomodachi Life",
+      "Town & City",
+      "Unova Pokémon League",
+      "Windy Hill Zone",
+      "Wuhu Island",
+      "Yoshi's Island (Brawl)",
+      "Yoshi's Island (Melee)",
+      "Yoshi's Story"
+    ]
+  },
+  {
+    "name": "containment with CONTAINED spelled out equals the default",
+    "request": {
+      "blastZones": {
+        "left": {
+          "min": -240,
+          "max": -200
+        }
+      },
+      "rangeMatch": "CONTAINED"
+    },
+    "expected": [
+      "75m",
+      "Balloon Fight",
+      "Battlefield",
+      "Bridge of Eldin",
+      "Castle Siege",
+      "Final Destination",
+      "Fountain of Dreams",
+      "Fourside",
+      "Gamer",
+      "Gerudo Valley",
+      "Green Greens",
+      "Halberd",
+      "Hanenbow",
+      "Kongo Jungle",
+      "Lylat Cruise",
+      "Mario Bros.",
+      "Mushroom Kingdom",
+      "Mute City",
+      "New Donk City Hall",
+      "Norfair",
+      "PictoChat 2",
+      "Pirate Ship",
+      "Port Town Aero Dive",
+      "Prism Tower",
+      "Rainbow Cruise",
+      "Reset Bomb Forest",
+      "Shadow Moses Island",
+      "Skyloft",
+      "Skyworld",
+      "Small Battlefield",
+      "Smashville",
+      "Spiral Mountain",
+      "Summit",
+      "Suzaku Castle",
+      "Tomodachi Life",
+      "Town & City",
+      "Unova Pokémon League",
+      "Windy Hill Zone",
+      "Wuhu Island",
+      "Yoshi's Island (Brawl)",
+      "Yoshi's Island (Melee)",
+      "Yoshi's Story"
+    ]
+  },
+  {
+    "name": "contained left blast zone plus no walk-offs",
+    "request": {
+      "blastZones": {
+        "left": {
+          "min": -240,
+          "max": -200
+        }
+      },
+      "features": {
+        "walkOffs": false
+      }
+    },
+    "expected": [
+      "Battlefield",
+      "Castle Siege",
+      "Final Destination",
+      "Fountain of Dreams",
+      "Fourside",
+      "Gamer",
+      "Green Greens",
+      "Halberd",
+      "Hanenbow",
+      "Kongo Jungle",
+      "Lylat Cruise",
+      "Mute City",
+      "Norfair",
+      "PictoChat 2",
+      "Pirate Ship",
+      "Rainbow Cruise",
+      "Reset Bomb Forest",
+      "Shadow Moses Island",
+      "Skyloft",
+      "Skyworld",
+      "Small Battlefield",
+      "Smashville",
+      "Spiral Mountain",
+      "Summit",
+      "Tomodachi Life",
+      "Town & City",
+      "Unova Pokémon League",
+      "Windy Hill Zone",
+      "Wuhu Island",
+      "Yoshi's Island (Brawl)",
+      "Yoshi's Story"
+    ]
+  },
+  {
+    "name": "ice and water together",
+    "request": {
+      "features": {
+        "ice": true,
+        "water": true
+      }
+    },
+    "expected": [
+      "Summit"
+    ]
+  },
+  {
+    "name": "stage width with only a minimum, contained",
+    "request": {
+      "stageWidth": {
+        "min": 900
+      }
+    },
+    "expected": [
+      "Great Cave Offensive"
+    ]
+  },
+  {
+    "name": "stage width with only a minimum, overlapping",
+    "request": {
+      "stageWidth": {
+        "min": 900
+      },
+      "rangeMatch": "OVERLAPS"
+    },
+    "expected": [
+      "Great Cave Offensive"
+    ]
+  },
+  {
+    "name": "stage width with only a maximum",
+    "request": {
+      "stageWidth": {
+        "max": 120
+      }
+    },
+    "expected": [
+      "Brinstar",
+      "Skyworld",
+      "Summit",
+      "WarioWare, Inc."
+    ]
+  },
+  {
+    "name": "open-ended left minimum, contained",
+    "request": {
+      "blastZones": {
+        "left": {
+          "min": -200
+        }
+      }
+    },
+    "expected": [
+      "3D Land",
+      "Balloon Fight",
+      "Brinstar",
+      "Coliseum",
+      "Distant Planet",
+      "Dream Land (GB)",
+      "Flat Zone X",
+      "Golden Plains",
+      "Green Hill Zone",
+      "Kongo Falls",
+      "Mario Bros.",
+      "Mario Circuit (Brawl)",
+      "Mario Galaxy",
+      "Mushroom Kingdom II",
+      "Mushroomy Kingdom",
+      "Onett",
+      "PAC-LAND",
+      "Paper Mario",
+      "Shadow Moses Island",
+      "WarioWare, Inc.",
+      "Wii Fit Studio",
+      "Yoshi's Island (Melee)"
+    ]
+  },
+  {
+    "name": "open-ended left minimum, overlapping",
+    "request": {
+      "blastZones": {
+        "left": {
+          "min": -200
+        }
+      },
+      "rangeMatch": "OVERLAPS"
+    },
+    "expected": [
+      "3D Land",
+      "Balloon Fight",
+      "Brinstar",
+      "Coliseum",
+      "Delfino Plaza",
+      "Distant Planet",
+      "Dream Land (GB)",
+      "Flat Zone X",
+      "Golden Plains",
+      "Green Hill Zone",
+      "Kongo Falls",
+      "Mario Bros.",
+      "Mario Circuit (Brawl)",
+      "Mario Circuit (Smash 4)",
+      "Mario Galaxy",
+      "Mushroom Kingdom II",
+      "Mushroomy Kingdom",
+      "Onett",
+      "PAC-LAND",
+      "Paper Mario",
+      "Shadow Moses Island",
+      "WarioWare, Inc.",
+      "Wii Fit Studio",
+      "Yoshi's Island (Melee)"
+    ]
+  },
+  {
+    "name": "open-ended left maximum, contained",
+    "request": {
+      "blastZones": {
+        "left": {
+          "max": -240
+        }
+      }
+    },
+    "expected": [
+      "Arena Ferox",
+      "Battlefield",
+      "Big Battlefield",
+      "Big Blue",
+      "Boxing Ring",
+      "Brinstar Depths",
+      "Corneria",
+      "Dracula's Castle",
+      "Dream Land (64)",
+      "Duck Hunt",
+      "Final Destination",
+      "Find Mii",
+      "Fountain of Dreams",
+      "Fourside",
+      "Frigate Orpheon",
+      "Garden of Hope",
+      "Gaur Plains",
+      "Great Bay",
+      "Great Cave Offensive",
+      "Great Plateau Tower",
+      "Green Greens",
+      "Hanenbow",
+      "Hyrule Castle",
+      "Jungle Japes",
+      "Kalos Pokémon League",
+      "Living Room",
+      "Luigi's Mansion",
+      "Magicant",
+      "Mario Maker",
+      "Mementos",
+      "Midgar",
+      "Moray Towers",
+      "New Pork City",
+      "Norfair",
+      "Palutena's Temple",
+      "Peach's Castle",
+      "Pilotwings",
+      "Pokémon Stadium",
+      "Pokémon Stadium 2",
+      "Princess Peach's Castle",
+      "Saffron City",
+      "Small Battlefield",
+      "Spear Pillar",
+      "Spiral Mountain",
+      "Spirit Train",
+      "Spring Stadium",
+      "Super Happy Tree",
+      "Suzaku Castle",
+      "Temple",
+      "Tortimer Island",
+      "Umbra Clock Tower",
+      "Venom",
+      "Wily Castle",
+      "Wrecking Crew",
+      "Wuhu Island",
+      "Yggdrasil's Altar"
+    ]
+  },
+  {
+    "name": "open-ended left maximum, overlapping",
+    "request": {
+      "blastZones": {
+        "left": {
+          "max": -240
+        }
+      },
+      "rangeMatch": "OVERLAPS"
+    },
+    "expected": [
+      "Arena Ferox",
+      "Battlefield",
+      "Big Battlefield",
+      "Big Blue",
+      "Boxing Ring",
+      "Brinstar Depths",
+      "Corneria",
+      "Dracula's Castle",
+      "Dream Land (64)",
+      "Duck Hunt",
+      "Final Destination",
+      "Find Mii",
+      "Fountain of Dreams",
+      "Fourside",
+      "Frigate Orpheon",
+      "Garden of Hope",
+      "Gaur Plains",
+      "Great Bay",
+      "Great Cave Offensive",
+      "Great Plateau Tower",
+      "Green Greens",
+      "Hanenbow",
+      "Hyrule Castle",
+      "Jungle Japes",
+      "Kalos Pokémon League",
+      "Living Room",
+      "Luigi's Mansion",
+      "Magicant",
+      "Mario Circuit (Smash 4)",
+      "Mario Maker",
+      "Mementos",
+      "Midgar",
+      "Moray Towers",
+      "New Pork City",
+      "Norfair",
+      "Palutena's Temple",
+      "Peach's Castle",
+      "Pilotwings",
+      "Pokémon Stadium",
+      "Pokémon Stadium 2",
+      "Port Town Aero Dive",
+      "Princess Peach's Castle",
+      "Saffron City",
+      "Small Battlefield",
+      "Spear Pillar",
+      "Spiral Mountain",
+      "Spirit Train",
+      "Spring Stadium",
+      "Super Happy Tree",
+      "Suzaku Castle",
+      "Temple",
+      "Tortimer Island",
+      "Umbra Clock Tower",
+      "Venom",
+      "Wily Castle",
+      "Wrecking Crew",
+      "Wuhu Island",
+      "Yggdrasil's Altar"
+    ]
+  },
+  {
+    "name": "right blast zone range, contained",
+    "request": {
+      "blastZones": {
+        "right": {
+          "min": 200,
+          "max": 260
+        }
+      }
+    },
+    "expectedCount": 70
+  },
+  {
+    "name": "top blast zone range, overlapping",
+    "request": {
+      "blastZones": {
+        "top": {
+          "min": 190,
+          "max": 200
+        }
+      },
+      "rangeMatch": "OVERLAPS"
+    },
+    "expected": [
+      "Arena Ferox",
+      "Battlefield",
+      "Dream Land (64)",
+      "Dream Land (GB)",
+      "Duck Hunt",
+      "Fountain of Dreams",
+      "Fourside",
+      "Gamer",
+      "Gerudo Valley",
+      "Great Bay",
+      "Great Plateau Tower",
+      "Green Greens",
+      "Hanenbow",
+      "Jungle Japes",
+      "Kalos Pokémon League",
+      "Kongo Jungle",
+      "Luigi's Mansion",
+      "Mario Circuit (Brawl)",
+      "Mario Circuit (Smash 4)",
+      "Mementos",
+      "Midgar",
+      "Moray Towers",
+      "Mushroom Kingdom",
+      "Onett",
+      "Paper Mario",
+      "Peach's Castle",
+      "PictoChat 2",
+      "Pilotwings",
+      "Reset Bomb Forest",
+      "Shadow Moses Island",
+      "Skyloft",
+      "Skyworld",
+      "Smashville",
+      "Super Happy Tree",
+      "Tortimer Island",
+      "Town & City",
+      "Umbra Clock Tower",
+      "Unova Pokémon League",
+      "Yggdrasil's Altar",
+      "Yoshi's Island (Melee)"
+    ]
+  },
+  {
+    "name": "bottom blast zone range, contained",
+    "request": {
+      "blastZones": {
+        "bottom": {
+          "min": -150,
+          "max": -100
+        }
+      }
+    },
+    "expectedCount": 64
+  },
+  {
+    "name": "distance to the blast zone, overlapping",
+    "request": {
+      "distanceToBlastZone": {
+        "min": 100,
+        "max": 150
+      },
+      "rangeMatch": "OVERLAPS"
+    },
+    "expected": [
+      "Arena Ferox",
+      "Big Blue",
+      "Brinstar",
+      "Brinstar Depths",
+      "Castle Siege",
+      "Corneria",
+      "Delfino Plaza",
+      "Distant Planet",
+      "Dracula's Castle",
+      "Find Mii",
+      "Fourside",
+      "Frigate Orpheon",
+      "Gamer",
+      "Great Bay",
+      "Green Greens",
+      "Halberd",
+      "Jungle Japes",
+      "Kongo Falls",
+      "Lylat Cruise",
+      "Magicant",
+      "Mario Circuit (Smash 4)",
+      "Mute City",
+      "New Pork City",
+      "Norfair",
+      "Palutena's Temple",
+      "Paper Mario",
+      "PictoChat 2",
+      "Pirate Ship",
+      "Port Town Aero Dive",
+      "Rainbow Cruise",
+      "Reset Bomb Forest",
+      "Shadow Moses Island",
+      "Skyloft",
+      "Suzaku Castle",
+      "Town & City",
+      "WarioWare, Inc.",
+      "Windy Hill Zone",
+      "Wuhu Island",
+      "Yoshi's Island (Brawl)",
+      "Yoshi's Island (Melee)"
+    ]
+  },
+  {
+    "name": "distance to the blast zone, contained",
+    "request": {
+      "distanceToBlastZone": {
+        "min": 100,
+        "max": 150
+      }
+    },
+    "expected": [
+      "Brinstar",
+      "Brinstar Depths",
+      "Castle Siege",
+      "Corneria",
+      "Dracula's Castle",
+      "Find Mii",
+      "Fourside",
+      "Frigate Orpheon",
+      "Gamer",
+      "Great Bay",
+      "Green Greens",
+      "Jungle Japes",
+      "Kongo Falls",
+      "Lylat Cruise",
+      "Magicant",
+      "Mute City",
+      "New Pork City",
+      "Norfair",
+      "Palutena's Temple",
+      "PictoChat 2",
+      "Pirate Ship",
+      "Rainbow Cruise",
+      "Reset Bomb Forest",
+      "Shadow Moses Island",
+      "Skyloft",
+      "Town & City",
+      "WarioWare, Inc.",
+      "Windy Hill Zone",
+      "Wuhu Island"
+    ]
+  },
+  {
+    "name": "ledges, up to one, contained",
+    "request": {
+      "ledgeCount": {
+        "max": 1
+      }
+    },
+    "expected": [
+      "Boxing Ring",
+      "Bridge of Eldin",
+      "Coliseum",
+      "Flat Zone X",
+      "Gerudo Valley",
+      "Golden Plains",
+      "Great Bay",
+      "Green Hill Zone",
+      "Living Room",
+      "Mario Bros.",
+      "Mario Circuit (Brawl)",
+      "Mario Galaxy",
+      "Mushroomy Kingdom",
+      "Onett",
+      "Paper Mario",
+      "Shadow Moses Island",
+      "Spirit Train",
+      "Tortimer Island",
+      "Wii Fit Studio",
+      "Yoshi's Island (Melee)"
+    ]
+  },
+  {
+    "name": "ledges, exactly zero, overlapping",
+    "request": {
+      "ledgeCount": {
+        "min": 0,
+        "max": 0
+      },
+      "rangeMatch": "OVERLAPS"
+    },
+    "expected": [
+      "3D Land",
+      "Boxing Ring",
+      "Bridge of Eldin",
+      "Coliseum",
+      "Delfino Plaza",
+      "Dream Land (GB)",
+      "Flat Zone X",
+      "Gerudo Valley",
+      "Golden Plains",
+      "Great Bay",
+      "Green Hill Zone",
+      "Living Room",
+      "Mario Bros.",
+      "Mario Circuit (Brawl)",
+      "Mario Circuit (Smash 4)",
+      "Mario Galaxy",
+      "Mario Maker",
+      "Mushroomy Kingdom",
+      "New Donk City Hall",
+      "PAC-LAND",
+      "Port Town Aero Dive",
+      "Prism Tower",
+      "Shadow Moses Island",
+      "Spirit Train",
+      "Summit",
+      "Tortimer Island",
+      "Wii Fit Studio"
+    ]
+  },
+  {
+    "name": "walk-off stages",
+    "request": {
+      "features": {
+        "walkOffs": true
+      }
+    },
+    "expected": [
+      "3D Land",
+      "75m",
+      "Balloon Fight",
+      "Big Blue",
+      "Boxing Ring",
+      "Bridge of Eldin",
+      "Coliseum",
+      "Delfino Plaza",
+      "Distant Planet",
+      "Dream Land (GB)",
+      "Flat Zone X",
+      "Gerudo Valley",
+      "Golden Plains",
+      "Great Cave Offensive",
+      "Green Hill Zone",
+      "Living Room",
+      "Mario Bros.",
+      "Mario Circuit (Brawl)",
+      "Mario Circuit (Smash 4)",
+      "Mario Galaxy",
+      "Mario Maker",
+      "Mushroom Kingdom",
+      "Mushroom Kingdom II",
+      "Mushroomy Kingdom",
+      "New Donk City Hall",
+      "Onett",
+      "PAC-LAND",
+      "Paper Mario",
+      "Port Town Aero Dive",
+      "Prism Tower",
+      "Suzaku Castle",
+      "Wii Fit Studio",
+      "Yoshi's Island (Melee)"
+    ]
+  },
+  {
+    "name": "transforming asymmetrical stages",
+    "request": {
+      "features": {
+        "transform": true,
+        "symmetry": false
+      }
+    },
+    "expected": [
+      "3D Land",
+      "Delfino Plaza",
+      "Dream Land (GB)",
+      "Mario Circuit (Smash 4)",
+      "PAC-LAND",
+      "Port Town Aero Dive"
+    ]
+  },
+  {
+    "name": "every range and flag together",
+    "request": {
+      "blastZones": {
+        "left": {
+          "min": -260,
+          "max": -200
+        },
+        "right": {
+          "min": 200,
+          "max": 260
+        },
+        "top": {
+          "min": 150,
+          "max": 220
+        },
+        "bottom": {
+          "min": -160,
+          "max": -90
+        }
+      },
+      "stageWidth": {
+        "min": 100,
+        "max": 250
+      },
+      "distanceToBlastZone": {
+        "min": 100
+      },
+      "ledgeCount": {
+        "min": 2,
+        "max": 2
+      },
+      "features": {
+        "walkOffs": false,
+        "symmetry": true
+      }
+    },
+    "expected": [
+      "Battlefield",
+      "Dream Land (64)",
+      "Final Destination",
+      "Fountain of Dreams",
+      "Halberd",
+      "Kalos Pokémon League",
+      "Kongo Jungle",
+      "Luigi's Mansion",
+      "Lylat Cruise",
+      "Mementos",
+      "Midgar",
+      "PictoChat 2",
+      "Pokémon Stadium",
+      "Pokémon Stadium 2",
+      "Skyloft",
+      "Small Battlefield",
+      "Smashville",
+      "Spring Stadium",
+      "Town & City",
+      "Umbra Clock Tower",
+      "Unova Pokémon League",
+      "Wily Castle",
+      "Wuhu Island",
+      "Yggdrasil's Altar",
+      "Yoshi's Island (Brawl)",
+      "Yoshi's Story"
+    ]
+  }
+]
