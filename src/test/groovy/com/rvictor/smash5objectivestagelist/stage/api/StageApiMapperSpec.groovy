@@ -2,6 +2,7 @@ package com.rvictor.smash5objectivestagelist.stage.api
 
 import com.rvictor.smash5objectivestagelist.stage.domain.DecimalRange
 import com.rvictor.smash5objectivestagelist.stage.domain.IntRange
+import com.rvictor.smash5objectivestagelist.stage.domain.RangeMatch
 import com.rvictor.smash5objectivestagelist.support.StageFixtures
 import spock.lang.Specification
 
@@ -9,7 +10,7 @@ class StageApiMapperSpec extends Specification {
 
     def "an empty request maps to criteria with every part null"() {
         when:
-        def criteria = StageApiMapper.toCriteria(new StageSearchRequest(null, null, null, null, null))
+        def criteria = StageApiMapper.toCriteria(new StageSearchRequest(null, null, null, null, null, null))
 
         then:
         criteria.blastZones() == null
@@ -30,7 +31,8 @@ class StageApiMapperSpec extends Specification {
                 new DecimalRangeDto(140G, 200G),
                 new DecimalRangeDto(140G, 180G),
                 new IntRangeDto(2, 2),
-                new StageSearchRequest.FeatureFilter(false, null, false, false, false, true, false, null, false, false))
+                new StageSearchRequest.FeatureFilter(false, null, false, false, false, true, false, null, false, false),
+                RangeMatch.OVERLAPS)
 
         when:
         def criteria = StageApiMapper.toCriteria(request)
@@ -45,6 +47,7 @@ class StageApiMapperSpec extends Specification {
         criteria.ledgeCount() == new IntRange(2, 2)
         criteria.features().walkOffs() == false
         criteria.features().symmetry() == true
+        criteria.rangeMatch() == RangeMatch.OVERLAPS
     }
 
     def "omitted bounds and flags stay null in the criteria"() {
@@ -54,7 +57,8 @@ class StageApiMapperSpec extends Specification {
                 new DecimalRangeDto(null, 200G),
                 null,
                 null,
-                new StageSearchRequest.FeatureFilter(null, null, null, null, null, null, null, null, true, null))
+                new StageSearchRequest.FeatureFilter(null, null, null, null, null, null, null, null, true, null),
+                null)
 
         when:
         def criteria = StageApiMapper.toCriteria(request)
@@ -65,6 +69,7 @@ class StageApiMapperSpec extends Specification {
         criteria.stageWidth() == new DecimalRange(null, 200G)
         criteria.features().ice() == true
         criteria.features().water() == null
+        criteria.rangeMatch() == RangeMatch.CONTAINED
     }
 
     def "a stage maps to a response with all of its measurements"() {
