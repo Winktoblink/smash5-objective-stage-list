@@ -59,6 +59,16 @@ tasks.withType<Test> {
 
 tasks.test {
     finalizedBy(tasks.jacocoTestReport)
+
+    // StageDataSnapshotSpec compares the static page's stage list with the API. Pass
+    // -PupdateStageSnapshot to rewrite that file from the API instead of failing.
+    systemProperty("stageSnapshot.update", providers.gradleProperty("updateStageSnapshot").isPresent.toString())
+    systemProperty(
+        "stageSnapshot.file",
+        layout.projectDirectory
+            .file("src/main/resources/static/data/stages.json")
+            .asFile.absolutePath,
+    )
 }
 
 tasks.jacocoTestReport {

@@ -30,6 +30,14 @@ jobs:
       - name: Build
         run: ./gradlew build
 
+      # The page's JavaScript is tested with Node's built-in runner: no npm and no dependencies.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Test the page's JavaScript
+        run: node --test "src/test/js/*.test.mjs"
+
       - name: Upload test and coverage reports
         if: always()
         uses: actions/upload-artifact@v7
