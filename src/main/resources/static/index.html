@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smash Objective Stage List</title>
+  <style>
+    :root {
+      --bg: #f6f7f9; --panel: #fff; --text: #1c2330; --muted: #5d6778; --border: #d9dee6;
+      --accent: #c8102e; --accent-text: #fff; --ok: #1a7f4b; --bad: #b42318; --chip: #eef1f5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12151b; --panel: #1b2029; --text: #e8ebf0; --muted: #98a2b3; --border: #2e3644;
+        --accent: #ff4d63; --accent-text: #12151b; --ok: #4cc38a; --bad: #ff8a80; --chip: #262d3a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+    header, main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+    header { padding-top: 24px; }
+    h1 { margin: 0 0 4px; font-size: 1.6rem; }
+    h2 { font-size: 1rem; margin: 0 0 12px; }
+    p.lead { margin: 0 0 20px; color: var(--muted); }
+    a { color: var(--accent); }
+    form, .results { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    fieldset { border: 0; padding: 0; margin: 0 0 20px; }
+    legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+    .hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; }
+    .ranges { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+    .range .name { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 2px; }
+    .pair { display: flex; gap: 6px; }
+    .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .features label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 2px; }
+    input, select, button { font: inherit; color: inherit; }
+    input, select { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+    input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    button { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel); cursor: pointer; }
+    button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+    #status { margin: 0 0 12px; }
+    #status.error { color: var(--bad); }
+    #errors { margin: 0 0 12px; padding-left: 20px; color: var(--bad); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { color: var(--muted); font-weight: 600; }
+    .chip { display: inline-block; background: var(--chip); border-radius: 10px; padding: 0 8px; margin: 1px 2px 1px 0; font-size: 0.78rem; }
+    footer { max-width: 1100px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Smash Objective Stage List</h1>
+    <p class="lead">Describe the stage properties you care about and see every Super Smash Bros. Ultimate stage that meets all of them.
+      Leave a field empty to ignore it.</p>
+  </header>
+
+  <main>
+    <form id="search-form" novalidate>
+      <fieldset>
+        <legend>Measurements</legend>
+        <p class="hint">A stage matches a range only if its <em>entire</em> range falls inside it. Fill in one bound for an open-ended filter.</p>
+        <div class="ranges" id="ranges"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Features</legend>
+        <p class="hint">Any ignores the feature. Yes and No must match exactly.</p>
+        <div class="features" id="features"></div>
+      </fieldset>
+      <div class="actions">
+        <button type="submit" class="primary">Search</button>
+        <button type="button" id="preset">Classic competitive</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+
+    <section class="results" aria-live="polite">
+      <h2>Results</h2>
+      <p id="status">Run a search to see matching stages.</p>
+      <ul id="errors" hidden></ul>
+      <div class="table-wrap">
+        <table id="table" hidden>
+          <thead>
+            <tr>
+              <th>Stage</th><th>Width</th><th>Left</th><th>Right</th><th>Top</th><th>Bottom</th>
+              <th>To blast zone</th><th>Ledges</th><th>Features</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    API docs: <a href="/swagger-ui.html">Swagger UI</a> &middot;
+    <a href="https://github.com/Winktoblink/smash5-objective-stage-list">Source</a>
+  </footer>
+
+  <script>
+    'use strict';
+
+    const API = '/api/v1/stages/search';
+
+    const RANGES = [
+      { key: 'blastZones.left', label: 'Left blast zone' },
+      { key: 'blastZones.right', label: 'Right blast zone' },
+      { key: 'blastZones.top', label: 'Top blast zone' },
+      { key: 'blastZones.bottom', label: 'Bottom blast zone' },
+      { key: 'stageWidth', label: 'Stage width' },
+      { key: 'distanceToBlastZone', label: 'Distance to blast zone' },
+      { key: 'ledgeCount', label: 'Ledge count', integer: true },
+    ];
+
+    const FEATURES = [
+      ['walkOffs', 'Walk-offs'], ['ceiling', 'Ceiling'], ['wallInfinite', 'Infinite wall'],
+      ['random', 'Random'], ['water', 'Water'], ['symmetry', 'Symmetrical'],
+      ['transform', 'Transforms'], ['twoDimensional', '2D'], ['ice', 'Ice'], ['hurtBox', 'Hurtbox hazard'],
+    ];
+
+    const CLASSIC = {
+      ledgeCount: { min: 2, max: 2 },
+      features: { walkOffs: false, wallInfinite: false, random: false, water: false,
+                  symmetry: true, transform: false, ice: false, hurtBox: false },
+    };
+
+    const form = document.getElementById('search-form');
+    const statusEl = document.getElementById('status');
+    const errorsEl = document.getElementById('errors');
+    const table = document.getElementById('table');
+    const tbody = table.querySelector('tbody');
+
+    function el(tag, attrs = {}, ...children) {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+      node.append(...children);
+      return node;
+    }
+
+    function buildForm() {
+      const ranges = document.getElementById('ranges');
+      for (const r of RANGES) {
+        const attrs = { type: 'number', step: r.integer ? '1' : 'any' };
+        const min = el('input', { ...attrs, name: r.key + '.min', 'aria-label': r.label + ' minimum', placeholder: 'min' });
+        const max = el('input', { ...attrs, name: r.key + '.max', 'aria-label': r.label + ' maximum', placeholder: 'max' });
+        ranges.append(el('div', { class: 'range' }, el('span', { class: 'name' }, r.label),
+          el('div', { class: 'pair' }, min, max)));
+      }
+      const features = document.getElementById('features');
+      for (const [key, label] of FEATURES) {
+        const id = 'f-' + key;
+        const select = el('select', { id, name: 'features.' + key },
+          el('option', { value: '' }, 'Any'), el('option', { value: 'true' }, 'Yes'), el('option', { value: 'false' }, 'No'));
+        features.append(el('div', {}, el('label', { for: id }, label), select));
+      }
+    }
+
+    /** Sets nested[path] = value, creating parent objects as needed. */
+    function setPath(target, path, value) {
+      const parts = path.split('.');
+      let node = target;
+      for (const part of parts.slice(0, -1)) node = node[part] ??= {};
+      node[parts.at(-1)] = value;
+    }
+
+    /** Turns the form into the request body, leaving out every empty field. */
+    function readRequest() {
+      const body = {};
+      for (const input of form.querySelectorAll('input[name]')) {
+        if (input.value.trim() !== '') setPath(body, input.name, Number(input.value));
+      }
+      for (const select of form.querySelectorAll('select[name]')) {
+        if (select.value !== '') setPath(body, select.name, select.value === 'true');
+      }
+      return body;
+    }
+
+    function fillForm(values) {
+      form.reset();
+      for (const input of form.querySelectorAll('input[name]')) {
+        const v = input.name.split('.').reduce((o, k) => o?.[k], values);
+        if (v !== undefined) input.value = v;
+      }
+      for (const select of form.querySelectorAll('select[name]')) {
+        const v = select.name.split('.').reduce((o, k) => o?.[k], values);
+        if (v !== undefined) select.value = String(v);
+      }
+    }
+
+    function range(r) {
+      return r.min === r.max ? String(r.min) : r.min + ' to ' + r.max;
+    }
+
+    function renderStages(stages) {
+      tbody.replaceChildren(...stages.map(s => {
+        const on = FEATURES.filter(([key]) => s.features[key]).map(([, label]) => el('span', { class: 'chip' }, label));
+        return el('tr', {},
+          el('td', {}, s.name), el('td', {}, String(s.stageWidth)),
+          el('td', {}, range(s.blastZones.left)), el('td', {}, range(s.blastZones.right)),
+          el('td', {}, range(s.blastZones.top)), el('td', {}, range(s.blastZones.bottom)),
+          el('td', {}, range(s.distanceToBlastZone)), el('td', {}, range(s.ledgeCount)),
+          el('td', {}, ...on));
+      }));
+      table.hidden = stages.length === 0;
+    }
+
+    function showStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.classList.toggle('error', isError);
+    }
+
+    async function search(event) {
+      event?.preventDefault();
+      errorsEl.hidden = true;
+      errorsEl.replaceChildren();
+      showStatus('Searching...');
+      try {
+        const response = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(readRequest()),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          renderStages([]);
+          showStatus(data.detail || 'The request was rejected.', true);
+          for (const e of data.errors ?? []) errorsEl.append(el('li', {}, e.field + ': ' + e.message));
+          errorsEl.hidden = !(data.errors?.length);
+          return;
+        }
+        renderStages(data.stages);
+        showStatus(data.count === 1 ? '1 stage matches.' : data.count + ' stages match.');
+      } catch (err) {
+        renderStages([]);
+        showStatus('Could not reach the API: ' + err.message, true);
+      }
+    }
+
+    buildForm();
+    form.addEventListener('submit', search);
+    form.addEventListener('reset', () => setTimeout(() => {
+      renderStages([]);
+      errorsEl.hidden = true;
+      showStatus('Run a search to see matching stages.');
+    }));
+    document.getElementById('preset').addEventListener('click', () => { fillForm(CLASSIC); search(); });
+  </script>
+</body>
+</html>
