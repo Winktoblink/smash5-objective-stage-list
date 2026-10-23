@@ -107,3 +107,24 @@ dialog::backdrop { background: rgb(0 0 0 / 0.5); }
 .stage .choose button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 .diff-list { margin: 0 0 8px; padding-left: 18px; font-size: 0.9rem; }
 .diff-list .why { color: var(--muted); font-size: 0.8rem; }
+
+/* striking simulator: large tap targets, one action per screen */
+.strike-page main { max-width: 720px; }
+.strike-page h2 { font-size: 1.25rem; }
+.back { margin: 0 0 8px; }
+.button { display: inline-block; padding: 10px 16px; border: 1px solid var(--border); border-radius: 6px; text-decoration: none; background: var(--panel); }
+button.big { width: 100%; min-height: 56px; font-size: 1.05rem; margin-top: 12px; }
+.stage-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.stage-button { width: 100%; min-height: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; text-align: center; }
+.stage-button:disabled { opacity: 0.45; cursor: not-allowed; }
+.stage-button .sb-picture .diagram { width: 100px; height: 64px; }
+.stage-button .sb-name { font-weight: 600; }
+.stage-button .sb-reason { font-size: 0.78rem; color: var(--bad); }
+.big-picture .diagram { width: 100%; height: auto; max-height: 260px; }
+.win-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.setup-field { display: grid; gap: 8px; margin-bottom: 8px; }
+.setup-field input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+.choice { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.choice input { width: auto; }
+.games { padding-left: 22px; }
+#log { padding-left: 22px; font-size: 0.9rem; }

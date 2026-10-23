@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Striking simulator</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="strike-page">
+  <header>
+    <p class="back"><a id="back" href="index.html">&larr; Back to the stage list builder</a></p>
+    <h1>Striking simulator</h1>
+  </header>
+
+  <main>
+    <section class="results" id="screen" aria-live="polite">
+      <p>Loading…</p>
+    </section>
+    <p class="actions" id="undo-row" hidden>
+      <button type="button" id="undo">Undo last step</button>
+    </p>
+    <section class="results" id="log-section" hidden>
+      <details>
+        <summary>What has happened so far</summary>
+        <ol id="log"></ol>
+      </details>
+    </section>
+  </main>
+
+  <script type="module" src="js/strike.js"></script>
+</body>
+</html>
