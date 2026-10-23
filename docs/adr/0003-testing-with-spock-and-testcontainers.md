@@ -24,7 +24,7 @@ that `spock-spring` would still work.
   - **Web slice** (`@WebMvcTest`) with a mocked `StageService`, covering response
     shapes and the problem-detail error contract.
   - **Integration** (`@SpringBootTest` + Testcontainers) against `postgres:18-alpine`,
-    the same image as `compose.yaml`. Flyway seeds the real 109 stages, and the
+    the same image as `compose.yaml`. Flyway seeds the real 107 stages, and the
     expected results are computed from that data.
 - A smoke test confirmed `spock-spring` works with Spring Framework 7, so no
   JUnit fallback was needed.

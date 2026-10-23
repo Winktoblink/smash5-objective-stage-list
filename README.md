@@ -27,15 +27,15 @@ curl -X POST http://localhost:8080/api/v1/stages/search \
       }'
 ```
 
-The response has a `count` and the matching `stages`, sorted by name (30 stages here; trimmed to the first one):
+The response has a `count` and the matching `stages`, sorted by name (28 stages here; trimmed to the first one):
 
 ```json
 {
-  "count": 30,
+  "count": 28,
   "stages": [
     {
-      "id": 6,
-      "name": "BattleField (Common)",
+      "id": 5,
+      "name": "Battlefield",
       "blastZones": {
         "left":   { "min": -240.0, "max": -240.0 },
         "right":  { "min": 240.0,  "max": 240.0 },
@@ -51,7 +51,7 @@ The response has a `count` and the matching `stages`, sorted by name (30 stages 
 }
 ```
 
-The `count` of 30 and the stage shape come from a real run of this request against the Compose stack in CI.
+The `count` of 28 and the stage shape come from a real run of this request against the Compose stack in CI.
 
 ## Tech stack
 
@@ -111,7 +111,7 @@ Then open <http://localhost:8080/> for the search page, or <http://localhost:808
 
 How search filters behave:
 
-- Every field is optional. `{}` returns all 109 stages.
+- Every field is optional. `{}` returns all 107 stages.
 - Range filters (`blastZones.left|right|top|bottom`, `distanceToBlastZone`, `ledgeCount`) use **containment** by default: a stage matches only if its whole `[min, max]` range lies inside the filter. Either bound can be omitted.
 - Add `"rangeMatch": "OVERLAPS"` to match stages whose range only has to *touch* the filter, which finds stages that can reach it at some point. Omitting the field, or sending `"CONTAINED"`, gives the default. Any other value is a `400`. See [ADR-0004](docs/adr/0004-opt-in-overlap-matching.md).
 - `stageWidth` is a single value and matches when it is inside the filter in both modes.
@@ -126,21 +126,21 @@ A small search page at `/` (plain HTML and JavaScript, no build step) lets you s
 - **Flyway owns the schema; Hibernate only validates.** A fresh database is always built the same way, and mapping drift fails at startup. See [ADR-0002](docs/adr/0002-flyway-owns-schema.md).
 - **Tests run against real PostgreSQL, written in Spock.** See [ADR-0003](docs/adr/0003-testing-with-spock-and-testcontainers.md).
 - **`POST` for search.** The filter is a nested document, which does not fit a query string cleanly.
-- **No pagination.** The data set is a fixed list of about 109 game stages, so paging would add client complexity with no benefit.
+- **No pagination.** The data set is a fixed list of about 107 game stages, so paging would add client complexity with no benefit.
 - **RFC 9457 problem details** for every error, with a field-level `errors` list on validation failures.
 
 ## Testing strategy
 
 - **Unit specs** (no Spring): range validation and DTO mapping.
 - **Web slice** (`@WebMvcTest`): response shapes and the error contract, with the service mocked.
-- **Integration** (`@SpringBootTest` + Testcontainers): the real app on `postgres:18-alpine`, with Flyway seeding all 109 stages. It checks known results such as the 30 stages above and the containment edge cases.
+- **Integration** (`@SpringBootTest` + Testcontainers): the real app on `postgres:18-alpine`, with Flyway seeding all 107 stages. It checks known results such as the 28 stages above and the containment edge cases.
 - JaCoCo fails the build below 80% line coverage.
 
 ## Data
 
-The 109 stages and their measurements are in the Flyway migrations under [`src/main/resources/db/migration`](src/main/resources/db/migration). The measurements were compiled manually by the author.
+The 107 stages and their measurements are in the Flyway migrations under [`src/main/resources/db/migration`](src/main/resources/db/migration). The measurements were compiled manually by the author. Every value assumes stage hazards are off. What each field means, the known gaps and how to report a correction are in [docs/DATA.md](docs/DATA.md).
 
-To add or correct a stage, add a new migration (for example `V3__add_stage.sql`). Do not edit migrations that have already been applied.
+To add or correct a stage, add a new migration (for example `V4__add_stage.sql`). Do not edit migrations that have already been applied.
 
 ## Roadmap
 

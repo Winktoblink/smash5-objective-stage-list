@@ -1,0 +1,41 @@
+name: Stage data correction
+description: A stage measurement or flag is wrong, or a stage is missing.
+title: "Data: <stage> - <field>"
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        All values assume stage hazards are off. See [docs/DATA.md](https://github.com/Winktoblink/smash5-objective-stage-list/blob/main/docs/DATA.md) for what each field means.
+  - type: input
+    id: stage
+    attributes:
+      label: Stage
+      placeholder: Delfino Plaza
+    validations:
+      required: true
+  - type: input
+    id: field
+    attributes:
+      label: Field
+      description: For example "left blast zone (min)", "ledge count" or "symmetry". Write "whole stage" for a missing stage.
+    validations:
+      required: true
+  - type: input
+    id: current
+    attributes:
+      label: Current value
+      description: What the data says now. Leave blank for a missing stage.
+  - type: input
+    id: correct
+    attributes:
+      label: Correct value
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: A link, or how you measured it. Corrections without a source can't be applied.
+    validations:
+      required: true
