@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 /**
- * Runs the real application against a real Postgres. Flyway seeds the 109 stages, so the expected values
+ * Runs the real application against a real Postgres. Flyway seeds the 107 stages, so the expected values
  * below are facts about that data set.
  */
 @SpringBootTest
@@ -28,12 +28,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class StageSearchIntegrationSpec extends Specification {
 
     static final List<String> CLASSIC_COMPETITIVE_STAGES = [
-            "BattleField (Common)", "Battlefield", "Big Battlefield", "Dream Land (64)", "Final Destination",
-            "Final Destination (Large)", "Fountain of Dreams", "Great Plateau Tower", "Kalos Pokémon League",
+            "Battlefield", "Big Battlefield", "Dream Land (64)", "Final Destination",
+            "Fountain of Dreams", "Great Plateau Tower", "Kalos Pokémon League",
             "Kongo Jungle", "Luigi's Mansion", "Lylat Cruise", "Mementos", "Midgar", "PictoChat 2",
             "Pokémon Stadium", "Pokémon Stadium 2", "Skyloft", "Small Battlefield", "Smashville",
             "Spring Stadium", "Town & City", "Umbra Clock Tower", "Unova Pokémon League", "WarioWare, Inc.",
-            "Wily Castle", "Wuhu Island", "Yggdrasil's Altar", "Yoshi Island", "Yoshi's Story"
+            "Wily Castle", "Wuhu Island", "Yggdrasil's Altar", "Yoshi's Island (Brawl)", "Yoshi's Story"
     ]
 
     @Autowired
@@ -58,17 +58,30 @@ class StageSearchIntegrationSpec extends Specification {
         def result = search("{}")
 
         then:
-        result.count == 109
-        result.stages.size() == 109
+        result.count == 107
+        result.stages.size() == 107
         names(result) == names(result).sort(false)
     }
 
-    def "the classic competitive filter finds exactly the expected 30 stages"() {
+    def "the V3 corrections removed two stages and renamed two others"() {
+        when:
+        def all = names(search("{}"))
+
+        then:
+        !("BattleField (Common)" in all)
+        !("Final Destination (Large)" in all)
+        !("Yoshi Island" in all)
+        !("Mario Bros" in all)
+        "Yoshi's Island (Brawl)" in all
+        "Mario Bros." in all
+    }
+
+    def "the classic competitive filter finds exactly the expected 28 stages"() {
         when:
         def result = search(StageSearchExamples.CLASSIC_COMPETITIVE)
 
         then:
-        result.count == 30
+        result.count == 28
         names(result) as Set == CLASSIC_COMPETITIVE_STAGES as Set
     }
 
@@ -77,7 +90,7 @@ class StageSearchIntegrationSpec extends Specification {
         def result = search(StageSearchExamples.LEFT_BLAST_ZONE_CONTAINMENT)
 
         then:
-        result.count == 43
+        result.count == 42
         "Port Town Aero Dive" in names(result)
         // Delfino Plaza (-230..-180) and Mario Circuit (-250..-175) only partly overlap the filter.
         !("Delfino Plaza" in names(result))
@@ -124,7 +137,7 @@ class StageSearchIntegrationSpec extends Specification {
         def result = search('{"blastZones": {"left": {"min": -240, "max": -200}}, "features": {"walkOffs": false}}')
 
         then:
-        result.count == 32
+        result.count == 31
     }
 
     def "flags combine, and can narrow the result to a single stage"() {

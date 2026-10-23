@@ -50,7 +50,7 @@ jobs:
           done
           curl -fsS -X POST http://localhost:8080/api/v1/stages/search             -H 'Content-Type: application/json'             -d '{"ledgeCount":{"min":2,"max":2},"features":{"walkOffs":false,"wallInfinite":false,"random":false,"water":false,"symmetry":true,"transform":false,"ice":false,"hurtBox":false}}'             -o search.json
           jq '{count, first: .stages[0]}' search.json
-          test "$(jq .count search.json)" = "30"
+          test "$(jq .count search.json)" = "28"
           echo "swagger-ui status: $(curl -fsSL -o /dev/null -w '%{http_code}' http://localhost:8080/swagger-ui.html)"
           curl -fsS http://localhost:8080/v3/api-docs | jq -r '.paths | keys[]'
 

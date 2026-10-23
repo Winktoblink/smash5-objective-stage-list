@@ -12,13 +12,13 @@ GET {{baseUrl}}/api/v1/stages/1
 ### Unknown id -> 404 problem detail
 GET {{baseUrl}}/api/v1/stages/999999
 
-### Search: empty filter matches all 109 stages
+### Search: empty filter matches all 107 stages
 POST {{baseUrl}}/api/v1/stages/search
 Content-Type: application/json
 
 {}
 
-### Search: "classic competitive" -> 30 stages
+### Search: "classic competitive" -> 28 stages
 POST {{baseUrl}}/api/v1/stages/search
 Content-Type: application/json
 
@@ -36,7 +36,7 @@ Content-Type: application/json
   }
 }
 
-### Search: containment. Stages whose left blast zone stays within -240..-200 -> 43 stages
+### Search: containment. Stages whose left blast zone stays within -240..-200 -> 42 stages
 POST {{baseUrl}}/api/v1/stages/search
 Content-Type: application/json
 

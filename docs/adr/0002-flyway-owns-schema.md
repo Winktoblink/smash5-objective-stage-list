@@ -4,7 +4,7 @@ Status: Accepted
 
 ## Context
 
-The application stores its 109 stages in PostgreSQL. A developer, a CI runner
+The application stores its 107 stages in PostgreSQL. A developer, a CI runner
 and the container all need to arrive at the identical schema and data without
 manual steps. Hibernate can generate DDL itself (`ddl-auto=update|create`), but
 that hides the real schema in entity annotations and makes data seeding a
