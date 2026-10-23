@@ -12,9 +12,10 @@ import org.springframework.data.jpa.domain.Specification;
 /**
  * Translates {@link StageSearchCriteria} into a JPA {@link Specification}.
  *
- * <p>Range filters use <em>containment</em>: a stage matches only if its whole {@code [min, max]} range
- * lies inside the requested range. Stage width is a single value and matches when it falls inside the
- * requested range. Feature flags must match exactly when specified.
+ * <p>By default range filters use <em>containment</em>: a stage matches only if its whole {@code [min, max]}
+ * range lies inside the requested range. With {@link RangeMatch#OVERLAPS} a stage matches when its range
+ * shares at least one value with the requested range. Stage width is a single value and matches when it
+ * falls inside the requested range in either mode. Feature flags must match exactly when specified.
  */
 public final class StageSpecifications {
 
@@ -23,16 +24,17 @@ public final class StageSpecifications {
     public static Specification<Stage> matching(StageSearchCriteria criteria) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            boolean overlaps = criteria.rangeMatch() == RangeMatch.OVERLAPS;
 
             StageSearchCriteria.BlastZones blastZones = criteria.blastZones();
             if (blastZones != null) {
-                addContained(predicates, cb, root, "leftBlastZone", blastZones.left());
-                addContained(predicates, cb, root, "rightBlastZone", blastZones.right());
-                addContained(predicates, cb, root, "topBlastZone", blastZones.top());
-                addContained(predicates, cb, root, "bottomBlastZone", blastZones.bottom());
+                addRange(predicates, cb, root, "leftBlastZone", blastZones.left(), overlaps);
+                addRange(predicates, cb, root, "rightBlastZone", blastZones.right(), overlaps);
+                addRange(predicates, cb, root, "topBlastZone", blastZones.top(), overlaps);
+                addRange(predicates, cb, root, "bottomBlastZone", blastZones.bottom(), overlaps);
             }
-            addContained(predicates, cb, root, "distanceToBlastZone", criteria.distanceToBlastZone());
-            addContained(predicates, cb, root, "ledgeCount", criteria.ledgeCount());
+            addRange(predicates, cb, root, "distanceToBlastZone", criteria.distanceToBlastZone(), overlaps);
+            addRange(predicates, cb, root, "ledgeCount", criteria.ledgeCount(), overlaps);
             addWidth(predicates, cb, root, criteria.stageWidth());
             addFeatures(predicates, cb, root, criteria.features());
 
@@ -40,8 +42,13 @@ public final class StageSpecifications {
         };
     }
 
-    private static void addContained(
-            List<Predicate> predicates, CriteriaBuilder cb, Root<Stage> root, String attribute, DecimalRange range) {
+    private static void addRange(
+            List<Predicate> predicates,
+            CriteriaBuilder cb,
+            Root<Stage> root,
+            String attribute,
+            DecimalRange range,
+            boolean overlaps) {
         if (range == null) {
             return;
         }
@@ -51,11 +58,17 @@ public final class StageSpecifications {
                 root.<BigDecimal>get(attribute).get("min"),
                 range.min(),
                 root.<BigDecimal>get(attribute).get("max"),
-                range.max());
+                range.max(),
+                overlaps);
     }
 
-    private static void addContained(
-            List<Predicate> predicates, CriteriaBuilder cb, Root<Stage> root, String attribute, IntRange range) {
+    private static void addRange(
+            List<Predicate> predicates,
+            CriteriaBuilder cb,
+            Root<Stage> root,
+            String attribute,
+            IntRange range,
+            boolean overlaps) {
         if (range == null) {
             return;
         }
@@ -65,22 +78,27 @@ public final class StageSpecifications {
                 root.<Integer>get(attribute).get("min"),
                 range.min(),
                 root.<Integer>get(attribute).get("max"),
-                range.max());
+                range.max(),
+                overlaps);
     }
 
-    /** {@code filterMin <= stageMin} and {@code stageMax <= filterMax}, skipping open-ended sides. */
+    /**
+     * Skips open-ended sides. Contained: {@code filterMin <= stageMin} and {@code stageMax <= filterMax}.
+     * Overlapping: {@code stageMax >= filterMin} and {@code stageMin <= filterMax}.
+     */
     private static <N extends Comparable<? super N>> void addBounds(
             List<Predicate> predicates,
             CriteriaBuilder cb,
             Path<N> stageMin,
             N filterMin,
             Path<N> stageMax,
-            N filterMax) {
+            N filterMax,
+            boolean overlaps) {
         if (filterMin != null) {
-            predicates.add(cb.greaterThanOrEqualTo(stageMin, filterMin));
+            predicates.add(cb.greaterThanOrEqualTo(overlaps ? stageMax : stageMin, filterMin));
         }
         if (filterMax != null) {
-            predicates.add(cb.lessThanOrEqualTo(stageMax, filterMax));
+            predicates.add(cb.lessThanOrEqualTo(overlaps ? stageMin : stageMax, filterMax));
         }
     }
 

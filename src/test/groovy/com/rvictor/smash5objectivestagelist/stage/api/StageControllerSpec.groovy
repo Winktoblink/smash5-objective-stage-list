@@ -3,6 +3,7 @@ package com.rvictor.smash5objectivestagelist.stage.api
 import com.rvictor.smash5objectivestagelist.stage.StageNotFoundException
 import com.rvictor.smash5objectivestagelist.stage.StageService
 import com.rvictor.smash5objectivestagelist.stage.domain.IntRange
+import com.rvictor.smash5objectivestagelist.stage.domain.RangeMatch
 import com.rvictor.smash5objectivestagelist.stage.domain.StageSearchCriteria
 import com.rvictor.smash5objectivestagelist.support.StageFixtures
 import org.springframework.beans.factory.annotation.Autowired
@@ -133,6 +134,30 @@ class StageControllerSpec extends Specification {
     def "malformed JSON is a 400 problem detail"() {
         expect:
         mvc.perform(post("/api/v1/stages/search").contentType(MediaType.APPLICATION_JSON).content('{"ledgeCount": '))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath('$.title').value("Malformed request"))
+    }
+
+    def "rangeMatch reaches the service as part of the criteria"() {
+        given:
+        Mockito.when(stageService.search(Mockito.any(StageSearchCriteria))).thenReturn([])
+
+        when:
+        def result = mvc.perform(post("/api/v1/stages/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(StageSearchExamples.LEFT_BLAST_ZONE_OVERLAP))
+
+        then:
+        result.andExpect(status().isOk())
+        capturedCriteria().rangeMatch() == RangeMatch.OVERLAPS
+    }
+
+    def "an unknown rangeMatch value is a 400 problem detail"() {
+        expect:
+        mvc.perform(post("/api/v1/stages/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('{"rangeMatch": "TOUCHES"}'))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
                 .andExpect(jsonPath('$.title').value("Malformed request"))

@@ -4,6 +4,9 @@ package com.rvictor.smash5objectivestagelist.stage.domain;
  * What a caller wants from a stage. Every part is optional: a {@code null} part, a {@code null} range
  * bound, or a {@code null} flag means "don't care".
  *
+ * <p>{@code rangeMatch} says how range filters compare with a stage's range; {@code null} means
+ * {@link RangeMatch#CONTAINED}.
+ *
  * @see StageSpecifications for how each part is matched
  */
 public record StageSearchCriteria(
@@ -11,7 +14,21 @@ public record StageSearchCriteria(
         DecimalRange stageWidth,
         DecimalRange distanceToBlastZone,
         IntRange ledgeCount,
-        Features features) {
+        Features features,
+        RangeMatch rangeMatch) {
+
+    public StageSearchCriteria {
+        rangeMatch = rangeMatch == null ? RangeMatch.CONTAINED : rangeMatch;
+    }
+
+    public StageSearchCriteria(
+            BlastZones blastZones,
+            DecimalRange stageWidth,
+            DecimalRange distanceToBlastZone,
+            IntRange ledgeCount,
+            Features features) {
+        this(blastZones, stageWidth, distanceToBlastZone, ledgeCount, features, RangeMatch.CONTAINED);
+    }
 
     /** Criteria that match every stage. */
     public static StageSearchCriteria any() {

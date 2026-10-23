@@ -1,12 +1,14 @@
 package com.rvictor.smash5objectivestagelist.stage.api;
 
+import com.rvictor.smash5objectivestagelist.stage.domain.RangeMatch;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 
 /**
  * Filters for {@code POST /api/v1/stages/search}. Every field is optional; an empty body matches all stages.
  *
- * <p>Range filters match only stages whose <em>entire</em> range falls inside the requested range.
+ * <p>By default range filters match only stages whose <em>entire</em> range falls inside the requested range.
+ * Set {@code rangeMatch} to {@code OVERLAPS} to match stages whose range merely touches it.
  */
 @Schema(description = "Every field is optional. An empty object matches all stages.")
 public record StageSearchRequest(
@@ -14,7 +16,14 @@ public record StageSearchRequest(
         @Valid DecimalRangeDto stageWidth,
         @Valid DecimalRangeDto distanceToBlastZone,
         @Valid IntRangeDto ledgeCount,
-        FeatureFilter features) {
+        FeatureFilter features,
+
+        @Schema(
+                description = "How range filters compare with a stage's range. CONTAINED (the default): the"
+                        + " whole range must lie inside the filter. OVERLAPS: the ranges only have to share"
+                        + " a value.",
+                defaultValue = "CONTAINED")
+        RangeMatch rangeMatch) {
 
     public record BlastZoneFilter(
             @Valid DecimalRangeDto left,
