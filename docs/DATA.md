@@ -38,8 +38,10 @@ left of center, and a right blast zone of `240` is 240 units right of it.
 | `hurtBox` | Part of the stage can damage fighters. |
 
 The flag descriptions were written from the field names, not from a definition
-the author recorded. `random`, `transform` and `hurtBox` in particular still
-need the author to confirm exactly what counts. Treat them as provisional.
+the author recorded. `wallInfinite`, `random`, `transform` and `hurtBox` in
+particular still need the author to confirm exactly what counts. Treat them as
+provisional. The search page shows "Definition to be confirmed" for those four
+instead of repeating these lines.
 
 ## Range filters
 

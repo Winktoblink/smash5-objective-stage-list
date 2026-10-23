@@ -118,11 +118,16 @@ How search filters behave:
 - Feature flags must match exactly when given; omit one to ignore it.
 - A range with `min > max` is rejected with a `400`.
 
-A small search page at `/` (plain HTML and JavaScript, no build step) lets you set the filters and see the matching stages. Interactive API docs are at `/swagger-ui.html`, and ready-made requests are in [`http/stages.http`](http/stages.http).
+A search page at `/` (plain HTML and JavaScript modules, no build step) is built for tournament organizers. You enter blast zones as a distance from the center, pick "at all times" or "at some point", and every stage lands in **Matches**, **Near misses** (fails exactly one criterion) or **Excluded**, with each failed criterion explained in plain words. Each stage has a schematic diagram with Battlefield outlined for comparison, and there is a glossary. The page loads [`data/stages.json`](src/main/resources/static/data/stages.json) and evaluates everything in the browser, so it needs no API. See [ADR-0005](docs/adr/0005-ui-evaluates-criteria-in-the-browser.md).
+
+![The search page with the classic competitive criteria](docs/images/search-page.png)
+
+Interactive API docs are at `/swagger-ui.html`, and ready-made requests are in [`http/stages.http`](http/stages.http).
 
 ## Design decisions
 
 - **Containment for range filters.** A stage that only sometimes meets a requirement does not meet it. See [ADR-0001](docs/adr/0001-range-containment-filter-semantics.md). Overlap matching is available as an explicit opt-in: [ADR-0004](docs/adr/0004-opt-in-overlap-matching.md).
+- **The page evaluates criteria in the browser.** It enables explanations, near misses and free static hosting; a golden-file test and shared conformance cases keep it in agreement with the API. See [ADR-0005](docs/adr/0005-ui-evaluates-criteria-in-the-browser.md).
 - **Flyway owns the schema; Hibernate only validates.** A fresh database is always built the same way, and mapping drift fails at startup. See [ADR-0002](docs/adr/0002-flyway-owns-schema.md).
 - **Tests run against real PostgreSQL, written in Spock.** See [ADR-0003](docs/adr/0003-testing-with-spock-and-testcontainers.md).
 - **`POST` for search.** The filter is a nested document, which does not fit a query string cleanly.
@@ -134,13 +139,15 @@ A small search page at `/` (plain HTML and JavaScript, no build step) lets you s
 - **Unit specs** (no Spring): range validation and DTO mapping.
 - **Web slice** (`@WebMvcTest`): response shapes and the error contract, with the service mocked.
 - **Integration** (`@SpringBootTest` + Testcontainers): the real app on `postgres:18-alpine`, with Flyway seeding all 107 stages. It checks known results such as the 28 stages above and the containment edge cases.
+- **Snapshot and conformance** (Testcontainers): `StageDataSnapshotSpec` checks that the page's `data/stages.json` equals the API, and `StageConformanceSpec` runs the shared cases in `src/test/resources/search-conformance.json` against the API.
+- **JavaScript** (Node's built-in runner, no dependencies): `node --test "src/test/js/*.test.mjs"` tests the page's logic and runs the same conformance cases through the JavaScript evaluator.
 - JaCoCo fails the build below 80% line coverage.
 
 ## Data
 
 The 107 stages and their measurements are in the Flyway migrations under [`src/main/resources/db/migration`](src/main/resources/db/migration). The measurements were compiled manually by the author. Every value assumes stage hazards are off. What each field means, the known gaps and how to report a correction are in [docs/DATA.md](docs/DATA.md).
 
-To add or correct a stage, add a new migration (for example `V4__add_stage.sql`). Do not edit migrations that have already been applied.
+To add or correct a stage, add a new migration (for example `V4__add_stage.sql`). Do not edit migrations that have already been applied. Then regenerate the page's copy of the data with `./gradlew test --tests '*StageDataSnapshotSpec' -PupdateStageSnapshot`; the build fails until `static/data/stages.json` matches the API.
 
 ## Roadmap
 
