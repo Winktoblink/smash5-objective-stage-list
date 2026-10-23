@@ -124,6 +124,8 @@ A search page at `/` (plain HTML and JavaScript modules, no build step) is built
 
 ![The search page with the classic competitive criteria](docs/images/search-page.png)
 
+The same page has a **stage list builder**: add stages from the results as starters or counterpicks, set the winner bans, DSR and Gentleman's Rule, and see errors and warnings (an even number of starters, a stage in both lists, too few stages left after bans, a chosen stage that fails your criteria). It suggests the game 1 striking order (1-1, 1-2-1 or 1-2-2-1) and can compare your criteria with a regional stage list. The regional lists (Unified North American, Unified European, Midwest) were read from [SmashWiki](https://www.ssbwiki.com/Tournament_rulesets_(SSBU)) and are hidden until the project owner reviews them; add `?review=1` to the page's address to preview them.
+
 Interactive API docs are at `/swagger-ui.html`, and ready-made requests are in [`http/stages.http`](http/stages.http).
 
 ## Design decisions

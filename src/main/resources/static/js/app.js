@@ -6,7 +6,11 @@ import {
 } from './criteria.js';
 import { describeMode, explainFailure, formatRange, measurementRows, summaryLine } from './explain.js';
 import { stageDiagram } from './diagram.js';
-import { CRITERIA_PRESETS } from './presets.js';
+import { CRITERIA_PRESETS, missingCount, visibleStagePresets } from './presets.js';
+import {
+  DSR_OPTIONS, addStage, emptyBuilder, fromPreset, removeStage, strikingOrder, validate,
+} from './builder.js';
+import { compareLists, diffWithPreset } from './diff.js';
 
 const DATA_URL = 'data/stages.json';
 const DEBOUNCE_MS = 120;
@@ -29,6 +33,8 @@ const MEASUREMENTS = [
 let stages = [];
 let references = [];
 let timer;
+let builder = emptyBuilder();
+let presets = [];
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -158,8 +164,11 @@ function stageCard(entry, mode) {
     : el('ul', { class: 'why ok' }, el('li', {}, 'Meets every criterion.'));
   const picture = el('div', { class: 'picture' });
   picture.innerHTML = stageDiagram(stage, references[0] ?? null);
+  const choose = el('div', { class: 'choose' },
+    el('button', { type: 'button', 'data-add': 'starters', 'data-id': stage.id, 'aria-pressed': String(builder.starters.includes(stage.id)) }, 'Starter'),
+    el('button', { type: 'button', 'data-add': 'counterpicks', 'data-id': stage.id, 'aria-pressed': String(builder.counterpicks.includes(stage.id)) }, 'Counterpick'));
   return el('li', { class: 'stage' }, picture,
-    el('div', {}, name, el('p', { class: 'numbers' }, summaryLine(stage)), why));
+    el('div', {}, name, el('p', { class: 'numbers' }, summaryLine(stage)), why, choose));
 }
 
 function group(title, entries, mode, { open = true, intro = '' } = {}) {
@@ -210,6 +219,103 @@ function refresh() {
     groups.push(group('Excluded', excluded, mode, { open: false, intro: 'These fail two or more criteria.' }));
   }
   $('groups').replaceChildren(...groups);
+  renderBuilder(criteria);
+  renderDiff(criteria);
+}
+
+// ---------- the stage-list builder ----------
+
+function tile(id) {
+  const stage = stages.find((s) => s.id === id);
+  if (!stage) return null;
+  const picture = el('div');
+  picture.innerHTML = stageDiagram(stage, references[0] ?? null);
+  return el('li', { class: 'tile' }, picture, el('div', {}, stage.name),
+    el('button', { type: 'button', class: 'remove', 'data-remove': id, 'aria-label': `Remove ${stage.name}` }, 'Remove'));
+}
+
+function tiles(list, missing) {
+  const items = builder[list].map(tile).filter(Boolean);
+  const notInData = missing.map((name) => el('li', { class: 'empty' }, `${name} (not in the data yet)`));
+  return items.length + notInData.length ? [...items, ...notInData] : [el('li', { class: 'empty' }, 'None chosen yet.')];
+}
+
+function renderBuilder(criteria) {
+  const missing = builder.loadedPreset ? presets.find((p) => p.id === builder.loadedPreset)?.missing : null;
+  const starterCount = builder.starters.length + builder.missingStarters;
+  const counterCount = builder.counterpicks.length + builder.missingCounterpicks;
+  $('starters-heading').textContent = `Starters (${starterCount})`;
+  $('counterpicks-heading').textContent = `Counterpicks (${counterCount})`;
+  $('starters').replaceChildren(...tiles('starters', missing?.starters ?? []));
+  $('counterpicks').replaceChildren(...tiles('counterpicks', missing?.counterpicks ?? []));
+  const order = strikingOrder(starterCount);
+  $('striking-order').textContent = order
+    ? `Use ${order} for game 1 striking.`
+    : 'Pick 3, 5 or 7 starters for a standard game 1 striking order (1-1, 1-2-1 or 1-2-2-1).';
+  $('set-bans').value = String(builder.bans);
+  $('set-dsr').value = builder.dsr;
+  $('set-gentleman').checked = builder.gentlemansRule;
+  $('builder-messages').replaceChildren(...validate(builder, stages, criteria)
+    .map((m) => el('li', { class: m.level }, m.message)));
+  const preset = presets.find((p) => p.id === $('list-preset').value);
+  $('preset-info').textContent = preset ? presetInfo(preset) : '';
+}
+
+function presetInfo(preset) {
+  const gap = missingCount(preset);
+  const parts = [`Source: ${preset.source} (checked ${preset.checked}).`, preset.note];
+  if (!preset.reviewed) parts.push('Not yet reviewed by the project owner.');
+  if (gap) {
+    const names = [...preset.missing.starters, ...preset.missing.counterpicks].join(', ');
+    parts.push(`${gap} stage${gap === 1 ? '' : 's'} not in the data yet: ${names}.`);
+  }
+  return parts.join(' ');
+}
+
+function diffGroup(title, entries, withReasons, mode) {
+  const items = entries.map(({ stage, failures }) => el('li', {}, stage.name,
+    ...(withReasons ? [el('ul', { class: 'why' }, ...failures.map((f) => el('li', {}, explainFailure(f, mode))))] : [])));
+  const details = el('details', { class: 'group' }, el('summary', {}, `${title} (${entries.length})`));
+  details.open = true;
+  details.append(items.length ? el('ul', { class: 'diff-list' }, ...items) : el('p', { class: 'hint' }, 'None.'));
+  return details;
+}
+
+function renderDiff(criteria) {
+  const preset = presets.find((p) => p.id === $('compare-preset').value);
+  if (!preset) {
+    $('diff').replaceChildren();
+    return;
+  }
+  const mode = criteria.rangeMatch ?? RANGE_MATCH.CONTAINED;
+  const diff = diffWithPreset(stages, criteria, preset);
+  const nodes = [
+    diffGroup(`Your criteria allow these, but ${preset.name} bans them`, diff.onlyCriteria, false, mode),
+    diffGroup(`${preset.name} allows these, but your criteria exclude them`, diff.onlyPreset, true, mode),
+    diffGroup('Both agree', diff.both, false, mode),
+  ];
+  if (diff.missing.length) {
+    nodes.push(el('p', { class: 'hint' }, `Not compared, because they are not in the data yet: ${diff.missing.join(', ')}.`));
+  }
+  if (builder.starters.length + builder.counterpicks.length) {
+    const lists = compareLists(builder, preset);
+    const name = (id) => stages.find((s) => s.id === id)?.name ?? id;
+    nodes.push(el('p', { class: 'hint' },
+      `Your builder lists vs ${preset.name}: ${lists.shared.length} shared; added by you: `
+      + `${lists.added.map(name).join(', ') || 'none'}; left out: ${lists.leftOut.map(name).join(', ') || 'none'}.`));
+  }
+  $('diff').replaceChildren(...nodes);
+}
+
+function buildPresetTools() {
+  presets = visibleStagePresets(new URLSearchParams(location.search).has('review'));
+  $('set-dsr').replaceChildren(...DSR_OPTIONS.map((o) => el('option', { value: o.value }, o.label)));
+  if (!presets.length) return;
+  $('preset-tools').hidden = false;
+  const label = (p) => (p.reviewed ? p.name : `${p.name} (not yet reviewed)`);
+  $('list-preset').replaceChildren(...presets.map((p) => el('option', { value: p.id }, label(p))));
+  $('compare-preset').replaceChildren(el('option', { value: '' }, 'Choose a stage list…'),
+    ...presets.map((p) => el('option', { value: p.id }, label(p))));
 }
 
 // ---------- detail view ----------
@@ -251,6 +357,7 @@ function fixSwaggerLink() {
 
 async function init() {
   buildForm();
+  buildPresetTools();
   fixSwaggerLink();
   try {
     const response = await fetch(DATA_URL);
@@ -275,10 +382,39 @@ async function init() {
     refresh();
   });
   $('groups').addEventListener('click', (event) => {
+    const add = event.target.closest('[data-add]');
+    if (add) {
+      const id = Number(add.dataset.id);
+      const list = add.dataset.add;
+      builder = builder[list].includes(id) ? removeStage(builder, id) : addStage(builder, list, id);
+      refresh();
+      return;
+    }
     const button = event.target.closest('[data-stage]');
     if (button) openDetail(Number(button.dataset.stage));
   });
+  $('builder').addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-remove]');
+    if (remove) {
+      builder = removeStage(builder, Number(remove.dataset.remove));
+      refresh();
+    }
+  });
+  $('set-bans').addEventListener('change', (event) => { builder = { ...builder, bans: Number(event.target.value) }; refresh(); });
+  $('set-dsr').addEventListener('change', (event) => { builder = { ...builder, dsr: event.target.value }; refresh(); });
+  $('set-gentleman').addEventListener('change', (event) => { builder = { ...builder, gentlemansRule: event.target.checked }; refresh(); });
+  $('load-list').addEventListener('click', () => {
+    const preset = presets.find((p) => p.id === $('list-preset').value);
+    if (preset) {
+      builder = { ...fromPreset(preset), loadedPreset: preset.id };
+      refresh();
+    }
+  });
+  $('clear-list').addEventListener('click', () => { builder = emptyBuilder(); refresh(); });
+  $('list-preset').addEventListener('change', refresh);
+  $('compare-preset').addEventListener('change', refresh);
   refresh();
+
 }
 
 init();
