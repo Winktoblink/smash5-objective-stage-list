@@ -267,6 +267,7 @@ function updateHash(plain) {
       history.replaceState(null, '', encode(state));
     }
     lastHash = location.hash;
+    $('open-sim').href = `strike.html${location.hash}`;
   } catch {
     // A page in a sandbox or preview may not allow it; the page works without an address.
   }
