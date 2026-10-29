@@ -3,7 +3,7 @@ spring-boot = "4.1.1"
 spring-dependency-management = "1.1.7"
 jacoco = "0.8.15"
 spotless = "8.10.4"
-springdoc = "3.1.1"
+springdoc = "3.2.0"
 spock = "2.5-groovy-5.0"
 
 [libraries]
